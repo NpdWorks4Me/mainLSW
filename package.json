@@ -2,8 +2,9 @@
   "name": "little-space-world",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
 "scripts": {
     "prebuild": "node ./scripts/check-env.js",
