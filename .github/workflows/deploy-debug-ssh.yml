@@ -1,0 +1,50 @@
+name: Debug Hostinger SSH Connection
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ssh-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Preflight info
+        run: |
+          echo "Starting SSH debug (Host will be printed masked)"
+          echo "HOST (masked): ${HOSTINGER_SSH_HOST}"
+
+      - name: Validate DNS resolution
+        run: |
+          if [ -z "${HOSTINGER_SSH_HOST}" ]; then echo "HOSTINGER_SSH_HOST is missing"; exit 1; fi
+          nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed"; exit 1; }
+
+      - name: Validate SSH key parse
+        env:
+          HOSTINGER_SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+        run: |
+          if [ -z "${HOSTINGER_SSH_PRIVATE_KEY}" ]; then echo "HOSTINGER_SSH_PRIVATE_KEY missing"; exit 1; fi
+          printf "%s\n" "${HOSTINGER_SSH_PRIVATE_KEY}" > /tmp/hostinger_key
+          chmod 600 /tmp/hostinger_key
+          echo "Testing private key format with ssh-keygen -y (does NOT print the key)"
+          ssh-keygen -y -f /tmp/hostinger_key >/tmp/_hostinger_pub || { echo "ssh-keygen parse failed (invalid private key)"; exit 1; }
+          echo "Private key parsed OK (public key generated)"
+
+      - name: Test SSH connectivity
+        env:
+          HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          USER: ${{ secrets.HOSTINGER_SSH_USERNAME }}
+          PORT: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+        run: |
+          echo "Attempting TCP connect to ${HOST}:${PORT} (no key shown)"
+          nc -vz -w 5 ${HOST} ${PORT} || { echo "TCP port open failed"; exit 1; }
+          echo "Now attempting SSH nondestructive connect (will not run commands)"
+          ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -i /tmp/hostinger_key ${USER}@${HOST} -p ${PORT} echo "SSH_OK" || { echo "SSH connection failed (auth or host)"; exit 1; }
+
+      - name: Result summary
+        run: |
+          echo "SSH debug completed (success)"
