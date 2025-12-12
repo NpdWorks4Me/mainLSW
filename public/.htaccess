@@ -1,11 +1,3 @@
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.html [L]
-
-<IfModule mod_headers.c>
-  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://api.stripe.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src data: https://fonts.gstatic.com;"
-</IfModule>
 # 1. Force non-www AND HTTPS
 RewriteEngine On
 
@@ -44,3 +36,7 @@ Redirect 301 /blog /littlespace  # /blog Index → Pillar Hub
 # 4. Correct MIME types
 AddType application/javascript .js .mjs
 AddType text/css .css
+
+<IfModule mod_headers.c>
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.supabase.co https://api.stripe.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com;"
+</IfModule>

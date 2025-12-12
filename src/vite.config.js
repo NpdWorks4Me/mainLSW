@@ -6,6 +6,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   base: '/',
+  publicDir: '../public',
   server: {
     port: 3000,
     strictPort: true,
