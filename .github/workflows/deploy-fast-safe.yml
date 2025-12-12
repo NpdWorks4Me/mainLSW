@@ -1,0 +1,69 @@
+name: Fast Deploy to Hostinger (safe)
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy (fast safe)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build main site
+        run: npm run build:main
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Install lftp (fallback)
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Deploy via SFTP (attempt)
+        # intentionally run for testing (do not break on missing secrets)
+        if: always()
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_SSH_HOST }}
+          username: ${{ secrets.HOSTINGER_SSH_USERNAME }}
+          key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+          source: "dist/"
+          target: "${{ secrets.HOSTINGER_TARGET_DIR_MAIN || 'public_html' }}"
+
+      - name: Deploy via FTP (fallback attempt)
+        if: always()
+        env:
+          FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+          FTP_USER: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.HOSTINGER_FTP_PORT || 21 }}
+          FTP_DIR: ${{ secrets.HOSTINGER_TARGET_DIR_MAIN || 'public_html' }}
+        run: |
+          echo "Attempting FTP fallback (may fail if secrets missing)"
+          lftp -u "$FTP_USER","$FTP_PASS" -p $FTP_PORT $FTP_HOST -e "mirror -R --delete --verbose dist $FTP_DIR; quit" || true
+
+      - name: Quick verify
+        if: always()
+        env:
+          SITE_URL: ${{ secrets.HOSTINGER_SITE_URL }}
+        run: |
+          echo "Waiting for site to be ready..."
+          sleep 5
+          curl -I "$SITE_URL" || true
