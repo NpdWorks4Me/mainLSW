@@ -18,6 +18,8 @@ import GlitchTitle from '@/components/GlitchTitle';
 import FeaturedStoreProducts from '@/components/FeaturedStoreProducts';
 import AboutAgeRegressionModal from '@/components/AboutAgeRegressionModal';
 
+// CI trigger: Minor non-functional comment to force a commit and run the CI pipeline (2025-12-12)
+
 // ———————————————————————— INLINED COMPONENTS ————————————————————————
 
 // Unified Y2K Cyber Card Component
