@@ -9,6 +9,11 @@ permissions:
 jobs:
   ssh-debug:
     runs-on: ubuntu-latest
+    env:
+      HOSTINGER_SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      HOSTINGER_SSH_USERNAME: ${{ secrets.HOSTINGER_SSH_USERNAME }}
+      HOSTINGER_SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+      HOSTINGER_SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
