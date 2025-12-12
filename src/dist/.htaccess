@@ -1,0 +1,42 @@
+# 1. Force non-www AND HTTPS
+RewriteEngine On
+
+# www → non-www
+RewriteCond %{HTTP_HOST} ^www\.littlespaceworld\.com [NC]
+RewriteRule ^(.*)$ https://littlespaceworld.com/$1 [L,R=301]
+
+# HTTP → HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# 2. Pillar redirects FIRST (before SPA fallback)
+Redirect 301 /blog/age-regression-friends /littlespace/age-regression-friends
+Redirect 301 /blog/what-is-littlespace-a-simple-guide-for-new-age-regressors /littlespace/what-is-littlespace
+Redirect 301 /blog/am-i-really-an-age-regressor /littlespace/am-i-really-an-age-regressor
+Redirect 301 /blog/5-littlespace-bedtime-rituals /littlespace/5-littlespace-bedtime-rituals
+Redirect 301 /blog/my-little-secrets-because-adulting-is-literally-not-it /littlespace/my-little-secrets
+Redirect 301 /blog/inner-child-journaling-prompt-kit /inner-child/inner-child-journaling-prompt-kit
+Redirect 301 /blog/therapeutic-age-regression-honest-coping-skill /mental-health/therapeutic-age-regression-honest-coping-skill
+Redirect 301 /blog/5-steps-to-surviving-young-adulthood /young-adult/5-steps-to-surviving-young-adulthood
+Redirect 301 /blog/age-regression-vs-pet-regression-whats-the-difference /advocacy/age-regression-vs-pet-regression-whats-the-difference
+Redirect 301 /blog/create-your-littlespace-diy-decor-cozy-nooks-and-sensory-faves /create/create-your-littlespace-diy-decor-cozy-nooks-and-sensory-faves
+Redirect 301 /blog /littlespace  # /blog Index → Pillar Hub
+
+# 3. Vite/React SPA rules (assets served correctly, fallback only for routes)
+<IfModule mod_rewrite.c>
+  # Serve real files first (JS, CSS, images, etc.)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Fallback to index.html for React Router routes
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# 4. Correct MIME types
+AddType application/javascript .js .mjs
+AddType text/css .css
+
+<IfModule mod_headers.c>
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.supabase.co https://api.stripe.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com;"
+</IfModule>
