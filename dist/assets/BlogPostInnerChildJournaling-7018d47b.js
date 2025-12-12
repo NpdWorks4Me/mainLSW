@@ -1,0 +1,1 @@
+import{j as t}from"./index-990712f9.js";import{A as i}from"./ArticleRenderer-7d9066b2.js";import{b as n}from"./blogPosts-6025aef2.js";import"./Breadcrumbs-8ccadf65.js";import"./ContentSection-08985ffb.js";import"./OptimizedBlogImage-bed5455c.js";function a(){const o=n.find(r=>r.slug.includes("inner-child-journaling"));return t.jsx(i,{post:o})}export{a as default};

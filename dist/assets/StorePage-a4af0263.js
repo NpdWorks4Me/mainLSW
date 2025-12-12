@@ -1,0 +1,1 @@
+import{j as s,P as e}from"./index-990712f9.js";import{P as t}from"./ProductsList-eadd2f01.js";function m(){return s.jsxs("main",{className:"min-h-screen",children:[s.jsx(e,{title:"Store"}),s.jsxs("div",{className:"max-w-7xl mx-auto px-4 py-12",children:[s.jsx("h1",{className:"text-3xl font-bold mb-6",children:"Shop"}),s.jsx(t,{})]})]})}export{m as default};

@@ -1,0 +1,1 @@
+import{j as r}from"./index-990712f9.js";import{A as e}from"./ArticleRenderer-7d9066b2.js";import{b as s}from"./blogPosts-6025aef2.js";import"./Breadcrumbs-8ccadf65.js";import"./ContentSection-08985ffb.js";import"./OptimizedBlogImage-bed5455c.js";function u(){const t=s.find(o=>o.slug.includes("create-your-littlespace"));return r.jsx(e,{post:t})}export{u as default};
