@@ -1,44 +1,52 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import GemstoneOdyssey from '@/components/GemstoneOdyssey';
+import TechAdventure from '@/components/TechAdventure';
 import PageHelmet from '@/components/PageHelmet';
-import ContentSection from '@/components/ContentSection';
 
-const stories = {
-  'comfort-owl': {
-    title: 'Comfort Owl – A Soothing Bedtime Tale',
-    content: `Once upon a time, there was an owl who loved to tuck the forest in each night. The owl would tuck the trees in and hum a soft tune, and the young foxes and bunnies would fall asleep under a sky of gentle stars.`
-  },
-  'adventure-gem': {
-    title: 'Gemstone Adventure – Choose Your Path',
-    content: `You find a glowing gemstone. Do you follow its trail into the moonlit glade, or stay by the river and build a tiny beacon? Wherever you go, the gemstone helps you hold onto bravery.`
-  },
-  'silly-sandcastle': {
-    title: 'The Silly Sandcastle',
-    content: `A little sandcastle with a big hat marched across the shore, inviting the tide to a tea party. The waves giggled and made tiny foam hats.`
+const StorytimeDetailPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const handleClose = () => {
+    navigate('/storytime');
+  };
+
+  if (id === 'gemstone') {
+    return (
+      <>
+        <PageHelmet title="A Gemstone Odyssey" description="Embark on a magical journey through a cavern of glowing gemstones." />
+        <div className="min-h-screen bg-[#0a0a1f] flex items-center justify-center p-4">
+          <GemstoneOdyssey onClose={handleClose} />
+        </div>
+      </>
+    );
   }
+
+  if (id === 'tech') {
+    return (
+      <>
+        <PageHelmet title="Race from the Arcade" description="Will Miles make it home from the arcade in time?" />
+        <div className="min-h-screen bg-[#0a0a1f] flex items-center justify-center p-4">
+          <TechAdventure onClose={handleClose} />
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center text-white">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Story Not Found</h1>
+        <button 
+          onClick={handleClose}
+          className="px-4 py-2 bg-pink-500 rounded hover:bg-pink-600 transition-colors"
+        >
+          Back to Stories
+        </button>
+      </div>
+    </div>
+  );
 };
 
-export default function StorytimeDetailPage(){
-  const { id } = useParams();
-  const story = stories[id];
-  if(!story) return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
-      <PageHelmet title="Story Not Found" />
-      <ContentSection>
-        <h2 className="text-xl font-semibold">Story not found</h2>
-        <p className="text-gray-300">Sorry, we couldn't find that story. Please return to Storytime and pick another one.</p>
-      </ContentSection>
-    </main>
-  );
-  return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
-      <PageHelmet title={story.title} description={`${story.title} – a short story`} />
-      <ContentSection>
-        <h1 className="text-3xl font-bold mb-4">{story.title}</h1>
-        <article className="prose prose-invert text-gray-200">
-          <p>{story.content}</p>
-        </article>
-      </ContentSection>
-    </main>
-  );
-}
+export default StorytimeDetailPage;

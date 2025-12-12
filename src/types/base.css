@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 40% 98%;
+  --foreground: 215 28% 93%;
+  --card: 210 40% 98%;
+  --card-foreground: 215 20% 97%;
+  --popover: 210 40% 98%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 349 89% 85%; /* Soft Pink */
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 207 100% 87%; /* Light Blue */
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215 20% 80%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 47.4% 11.2%;
+  --radius: 0.75rem;
+
+  --neon-pink: #FF69B4;
+  --neon-blue: #00FFFF;
+  --neon-purple: #BF00FF;
+  --neon-green: #39FF14;
+  --neon-yellow: #FFFF00;
+  --scroll-y: 0;
+
+  --border-color: rgba(255, 255, 255, 0.2);
+  --glass-gradient-from: rgba(255, 255, 255, 0.1);
+  --glass-gradient-to: rgba(255, 255, 255, 0.05);
+  --sidebar-glass-gradient-from: rgba(255, 255, 255, 0.15);
+  --sidebar-glass-gradient-to: rgba(255, 255, 255, 0.1);
+}
+
+html {
+  font-size: 100%; /* 16px */
+  scroll-behavior: smooth;
+}
+
+* {
+  border-color: hsl(var(--border));
+  word-wrap: break-word;
+}
+
+body {
+  background-color: transparent;
+  color: hsl(var(--foreground));
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  font-size: 1.125rem; /* 18px for mobile */
+  line-height: 1.7;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.menu-open {
+  overflow: hidden;
+}
+
+a {
+  color: hsl(var(--primary));
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+a:hover {
+  color: hsl(var(--secondary));
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+  content-visibility: auto;
+}
+
+/* Larger font size for tablets and desktops */
+@media (min-width: 768px) {
+  body {
+    font-size: 1.125rem; /* 18px */
+  }
+}
+
+main {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+    main {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}

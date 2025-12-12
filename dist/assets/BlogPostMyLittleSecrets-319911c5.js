@@ -1,1 +1,0 @@
-import{j as r}from"./index-990712f9.js";import{A as s}from"./ArticleRenderer-7d9066b2.js";import{b as e}from"./blogPosts-6025aef2.js";import"./Breadcrumbs-8ccadf65.js";import"./ContentSection-08985ffb.js";import"./OptimizedBlogImage-bed5455c.js";function f(){const t=e.find(o=>o.slug.includes("my-little-secrets"));return r.jsx(s,{post:t})}export{f as default};

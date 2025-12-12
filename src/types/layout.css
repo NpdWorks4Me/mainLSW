@@ -1,0 +1,129 @@
+.sidebar-glass-card {
+  background: linear-gradient(135deg, rgba(245, 245, 245, 0.1), rgba(224, 224, 224, 0.05));
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .sidebar-glass-card {
+  background: linear-gradient(135deg, var(--glass-gradient-from), var(--glass-gradient-to));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.menu-item {
+  margin-bottom: 0.5rem;
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  color: white;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  position: relative;
+}
+
+.menu-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.menu-link.active {
+  background: linear-gradient(135deg, rgba(186, 225, 255, 0.3), rgba(186, 255, 201, 0.3));
+  box-shadow: 0 2px 8px rgba(186, 225, 255, 0.4);
+}
+
+.dark .menu-link.active {
+  background: linear-gradient(135deg, rgba(191, 0, 255, 0.2), rgba(0, 255, 255, 0.2));
+  box-shadow: 0 2px 8px rgba(191, 0, 255, 0.4);
+}
+
+.sub-menu {
+  margin-left: 1.5rem;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.sub-menu-item {
+  margin-bottom: 0.25rem;
+}
+
+.sub-menu-link {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.sub-menu-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  transform: translateX(3px);
+}
+
+.sub-menu-link.active {
+  background: rgba(186, 225, 255, 0.2);
+  color: white;
+}
+
+.dark .sub-menu-link.active {
+  background: rgba(191, 0, 255, 0.15);
+}
+
+.featured-menu-item {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.featured-menu-item:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.2));
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.featured-menu-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+  animation: shimmer 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(245, 245, 245, 0.1), rgba(224, 224, 224, 0.05));
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border-radius: 1rem;
+}
+
+.dark .glass-card {
+  background: linear-gradient(135deg, var(--glass-gradient-from), var(--glass-gradient-to));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}

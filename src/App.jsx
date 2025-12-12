@@ -18,6 +18,8 @@ import { CookieConsentProvider } from '@/contexts/CookieConsentContext';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import GlobalStarfield from '@/components/GlobalStarfield';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ScrollToTop from '@/components/ScrollToTop';
+import CustomCursor from '@/components/CustomCursor';
 
 // Lazy load all pages for Code Splitting optimization
 const HomePage = lazy(() => import('@/pages/HomePage'));
@@ -104,113 +106,119 @@ function App() {
 
   return (
     <HelmetProvider>
-      <CookieConsentProvider>
+      <ErrorBoundary>
         <AuthProvider>
           <AuthModalProvider>
             <ProgressProvider>
               <CartProvider>
+                <ProductLightboxProvider>
                   <ImageLightboxProvider>
-                    <ProductLightboxProvider>
-                      <ErrorBoundary>
-                        <GlobalStarfield />
-                        <AuthModal />
-                        <Toaster />
+                    <CookieConsentProvider>
+                      <ScrollToTop />
+                      <CustomCursor />
+                      <GlobalStarfield />
+                      <div className="app-container min-h-screen bg-[#0a0a1f] text-white selection:bg-pink-500 selection:text-white">
                         <AnimatePresence mode="wait">
                           <Routes location={location} key={location.pathname}>
-                            <Route path="/" element={<Layout />}>
-                              <Route index element={<RouteWrapper><HomePage /></RouteWrapper>} />
-                              <Route path="explore" element={<RouteWrapper><ExplorePage /></RouteWrapper>} />
-                              
-                              {/* Blog Hub */}
-                              {/* 1. /blog → full Littlespace pillar (no more old blog list) */}
-                              <Route path="/blog" element={<LittlespacePillar />} />
-                              <Route path="/blog/*" element={<LittlespacePillar />} />
+                            <Route path="/" element={
+                              <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading...</div>}>
+                                <Layout>
+                                  <HomePage />
+                                </Layout>
+                              </Suspense>
+                            } />
+                            <Route path="explore" element={<RouteWrapper><ExplorePage /></RouteWrapper>} />
+                            
+                            {/* Blog Hub */}
+                            {/* 1. /blog → full Littlespace pillar (no more old blog list) */}
+                            <Route path="/blog" element={<LittlespacePillar />} />
+                            <Route path="/blog/*" element={<LittlespacePillar />} />
 
-                              {/* New Pillar Routes & Reorganized Posts */}
-                              
-                              {/* /admin route removed (admin app deleted) */}
+                            {/* New Pillar Routes & Reorganized Posts */}
+                            
+                            {/* /admin route removed (admin app deleted) */}
 
-                              {/* Littlespace Pillar */}
-                              <Route path="littlespace" element={<RouteWrapper><LittlespacePillar /></RouteWrapper>} />
-                              <Route path="littlespace/what-is-littlespace-a-simple-guide-for-new-age-regressors" element={<RouteWrapper><BlogPostWhatIsLittleSpace /></RouteWrapper>} />
-                              <Route path="littlespace/my-little-secrets-because-adulting-is-literally-not-it" element={<RouteWrapper><BlogPostMyLittleSecrets /></RouteWrapper>} />
-                              <Route path="littlespace/am-i-really-an-age-regressor" element={<RouteWrapper><BlogPostAmIAnAgeRegressor /></RouteWrapper>} />
-                              <Route path="littlespace/5-littlespace-bedtime-rituals-for-the-best-sleep" element={<RouteWrapper><BlogPostBedtimeRituals /></RouteWrapper>} />
-                              <Route path="littlespace/age-regression-vs-pet-regression-whats-the-difference" element={<RouteWrapper><BlogPostAgeVsPetRegression /></RouteWrapper>} />
-                              <Route path="littlespace/age-regression-friends" element={<RouteWrapper><BlogPostAgeRegression /></RouteWrapper>} />
+                            {/* Littlespace Pillar */}
+                            <Route path="littlespace" element={<RouteWrapper><LittlespacePillar /></RouteWrapper>} />
+                            <Route path="littlespace/what-is-littlespace-a-simple-guide-for-new-age-regressors" element={<RouteWrapper><BlogPostWhatIsLittleSpace /></RouteWrapper>} />
+                            <Route path="littlespace/my-little-secrets-because-adulting-is-literally-not-it" element={<RouteWrapper><BlogPostMyLittleSecrets /></RouteWrapper>} />
+                            <Route path="littlespace/am-i-really-an-age-regressor" element={<RouteWrapper><BlogPostAmIAnAgeRegressor /></RouteWrapper>} />
+                            <Route path="littlespace/5-littlespace-bedtime-rituals-for-the-best-sleep" element={<RouteWrapper><BlogPostBedtimeRituals /></RouteWrapper>} />
+                            <Route path="littlespace/age-regression-vs-pet-regression-whats-the-difference" element={<RouteWrapper><BlogPostAgeVsPetRegression /></RouteWrapper>} />
+                            <Route path="littlespace/age-regression-friends" element={<RouteWrapper><BlogPostAgeRegression /></RouteWrapper>} />
 
-                              {/* Inner Child Pillar */}
-                              <Route path="inner-child" element={<RouteWrapper><InnerChildPillar /></RouteWrapper>} />
-                              <Route path="inner-child/inner-child-journaling-prompt-kit" element={<RouteWrapper><BlogPostInnerChildJournaling /></RouteWrapper>} />
+                            {/* Inner Child Pillar */}
+                            <Route path="inner-child" element={<RouteWrapper><InnerChildPillar /></RouteWrapper>} />
+                            <Route path="inner-child/inner-child-journaling-prompt-kit" element={<RouteWrapper><BlogPostInnerChildJournaling /></RouteWrapper>} />
 
-                              {/* Mental Health Pillar */}
-                              <Route path="mental-health" element={<RouteWrapper><MentalHealthPillar /></RouteWrapper>} />
-                              <Route path="mental-health/therapeutic-age-regression-honest-coping-skill" element={<RouteWrapper><BlogPostTherapeuticAgeRegression /></RouteWrapper>} />
+                            {/* Mental Health Pillar */}
+                            <Route path="mental-health" element={<RouteWrapper><MentalHealthPillar /></RouteWrapper>} />
+                            <Route path="mental-health/therapeutic-age-regression-honest-coping-skill" element={<RouteWrapper><BlogPostTherapeuticAgeRegression /></RouteWrapper>} />
 
-                              {/* Young Adult Pillar */}
-                              <Route path="young-adult" element={<RouteWrapper><YoungAdultPillar /></RouteWrapper>} />
-                              <Route path="young-adult/5-steps-to-surviving-young-adulthood" element={<RouteWrapper><BlogPostSurvivingYoungAdulthood /></RouteWrapper>} />
+                            {/* Young Adult Pillar */}
+                            <Route path="young-adult" element={<RouteWrapper><YoungAdultPillar /></RouteWrapper>} />
+                            <Route path="young-adult/5-steps-to-surviving-young-adulthood" element={<RouteWrapper><BlogPostSurvivingYoungAdulthood /></RouteWrapper>} />
 
-                              {/* Create Pillar */}
-                              <Route path="create" element={<RouteWrapper><CreatePillar /></RouteWrapper>} />
-                              <Route path="create/create-your-littlespace-diy-decor-cozy-nooks-and-sensory-faves" element={<RouteWrapper><BlogPostCreateYourLittlespace /></RouteWrapper>} />
+                            {/* Create Pillar */}
+                            <Route path="create" element={<RouteWrapper><CreatePillar /></RouteWrapper>} />
+                            <Route path="create/create-your-littlespace-diy-decor-cozy-nooks-and-sensory-faves" element={<RouteWrapper><BlogPostCreateYourLittlespace /></RouteWrapper>} />
 
-                              {/* New Hubs (No posts assigned yet, but pages exist) */}
-                              <Route path="advocacy" element={<RouteWrapper><AdvocacyPillar /></RouteWrapper>} />
-                              <Route path="resources" element={<RouteWrapper><ResourcesPillar /></RouteWrapper>} />
+                            {/* New Hubs (No posts assigned yet, but pages exist) */}
+                            <Route path="advocacy" element={<RouteWrapper><AdvocacyPillar /></RouteWrapper>} />
+                            <Route path="resources" element={<RouteWrapper><ResourcesPillar /></RouteWrapper>} />
 
-                              {/* Other Routes */}
-                              <Route path="coloring-pages" element={<RouteWrapper><ActivitiesPage /></RouteWrapper>} />
-                              {/* Games */}
-                              <Route path="games/snake" element={<RouteWrapper><SnakeGamePage /></RouteWrapper>} />
-                              <Route path="guidance-and-support" element={<RouteWrapper><GuidanceAndSupportPage /></RouteWrapper>} />
-                              <Route path="about" element={<RouteWrapper><AboutPage /></RouteWrapper>} />
-                              <Route path="privacy" element={<RouteWrapper><PrivacyPage /></RouteWrapper>} />
-                              <Route path="terms" element={<RouteWrapper><TermsPage /></RouteWrapper>} />
-                              <Route path="cookie-policy" element={<RouteWrapper><CookiePolicyPage /></RouteWrapper>} />
-                              <Route path="contact" element={<RouteWrapper><ContactPage /></RouteWrapper>} />
-                              <Route path="confirmation" element={<RouteWrapper><ConfirmationPage /></RouteWrapper>} />
-                              <Route path="/auth/confirm" element={<RouteWrapper><ConfirmationPage /></RouteWrapper>} />
-                              <Route path="profile" element={<ProtectedRoute><RouteWrapper><ProfilePage /></RouteWrapper></ProtectedRoute>} />
-                              {/* 2. /store → store front (public-facing) */}
-                              <Route path="/store" element={<RouteWrapper><StorePage /></RouteWrapper>} />
-                              <Route path="product/:id" element={<RouteWrapper><ProductDetailPage /></RouteWrapper>} />
-                              <Route path="success" element={<RouteWrapper><SuccessPage /></RouteWrapper>} />
-                              <Route path="stories" element={<RouteWrapper><StoriesPage /></RouteWrapper>} />
-                              <Route path="storytime" element={<RouteWrapper><StorytimePage /></RouteWrapper>} />
-                              <Route path="storytime/:id" element={<RouteWrapper><StorytimeDetailPage /></RouteWrapper>} />
-                              <Route path="login" element={<RouteWrapper><LoginPage /></RouteWrapper>} />
-                              <Route path="signup" element={<RouteWrapper><SignUpPage /></RouteWrapper>} />
-                              <Route path="forgot-password" element={<RouteWrapper><ForgotPasswordPage /></RouteWrapper>} />
-                              <Route path="reset-password" element={<RouteWrapper><ResetPasswordPage /></RouteWrapper>} />
-                              <Route path="quizzes" element={<RouteWrapper><QuizzesPage /></RouteWrapper>} />
-                              <Route path="quizzes/super-you" element={<RouteWrapper><SuperYouQuizPage /></RouteWrapper>} />
-                              <Route path="quizzes/comfort-functions" element={<RouteWrapper><ComfortFunctionsQuizPage /></RouteWrapper>} />
-                              <Route path="self-help" element={<RouteWrapper><SelfHelpPage /></RouteWrapper>} />
-                              <Route path="safety" element={<RouteWrapper><SafetyPage /></RouteWrapper>} />
-                              <Route path="advice" element={<RouteWrapper><AdvicePage /></RouteWrapper>} />
-                              <Route path="community-qa" element={<RouteWrapper><QAPage /></RouteWrapper>} />
-                              <Route path="*" element={
-                                <RouteWrapper>
-                                  <PageHelmet title="Page Not Found" />
-                                   <div className="w-full h-screen flex flex-col items-center justify-center bg-[#0a0a14] text-gray-100">
-                                        <h1 className="text-6xl font-bold text-pink-500">404</h1>
-                                      <p className="mt-4 text-xl text-gray-300">Uh oh! Page Not Found! 🦄</p>
-                                   </div>
-                                </RouteWrapper>
-                              } />
-                            </Route>
+                            {/* Other Routes */}
+                            <Route path="coloring-pages" element={<RouteWrapper><ActivitiesPage /></RouteWrapper>} />
+                            {/* Games */}
+                            <Route path="games/snake" element={<RouteWrapper><SnakeGamePage /></RouteWrapper>} />
+                            <Route path="guidance-and-support" element={<RouteWrapper><GuidanceAndSupportPage /></RouteWrapper>} />
+                            <Route path="about" element={<RouteWrapper><AboutPage /></RouteWrapper>} />
+                            <Route path="privacy" element={<RouteWrapper><PrivacyPage /></RouteWrapper>} />
+                            <Route path="terms" element={<RouteWrapper><TermsPage /></RouteWrapper>} />
+                            <Route path="cookie-policy" element={<RouteWrapper><CookiePolicyPage /></RouteWrapper>} />
+                            <Route path="contact" element={<RouteWrapper><ContactPage /></RouteWrapper>} />
+                            <Route path="confirmation" element={<RouteWrapper><ConfirmationPage /></RouteWrapper>} />
+                            <Route path="/auth/confirm" element={<RouteWrapper><ConfirmationPage /></RouteWrapper>} />
+                            <Route path="profile" element={<ProtectedRoute><RouteWrapper><ProfilePage /></RouteWrapper></ProtectedRoute>} />
+                            {/* 2. /store → store front (public-facing) */}
+                            <Route path="/store" element={<RouteWrapper><StorePage /></RouteWrapper>} />
+                            <Route path="product/:id" element={<RouteWrapper><ProductDetailPage /></RouteWrapper>} />
+                            <Route path="success" element={<RouteWrapper><SuccessPage /></RouteWrapper>} />
+                            <Route path="stories" element={<RouteWrapper><StoriesPage /></RouteWrapper>} />
+                            <Route path="storytime" element={<RouteWrapper><StorytimePage /></RouteWrapper>} />
+                            <Route path="storytime/:id" element={<RouteWrapper><StorytimeDetailPage /></RouteWrapper>} />
+                            <Route path="login" element={<RouteWrapper><LoginPage /></RouteWrapper>} />
+                            <Route path="signup" element={<RouteWrapper><SignUpPage /></RouteWrapper>} />
+                            <Route path="forgot-password" element={<RouteWrapper><ForgotPasswordPage /></RouteWrapper>} />
+                            <Route path="reset-password" element={<RouteWrapper><ResetPasswordPage /></RouteWrapper>} />
+                            <Route path="quizzes" element={<RouteWrapper><QuizzesPage /></RouteWrapper>} />
+                            <Route path="quizzes/super-you" element={<RouteWrapper><SuperYouQuizPage /></RouteWrapper>} />
+                            <Route path="quizzes/comfort-functions" element={<RouteWrapper><ComfortFunctionsQuizPage /></RouteWrapper>} />
+                            <Route path="self-help" element={<RouteWrapper><SelfHelpPage /></RouteWrapper>} />
+                            <Route path="safety" element={<RouteWrapper><SafetyPage /></RouteWrapper>} />
+                            <Route path="advice" element={<RouteWrapper><AdvicePage /></RouteWrapper>} />
+                            <Route path="community-qa" element={<RouteWrapper><QAPage /></RouteWrapper>} />
+                            <Route path="*" element={
+                              <RouteWrapper>
+                                <PageHelmet title="Page Not Found" />
+                                 <div className="w-full h-screen flex flex-col items-center justify-center bg-[#0a0a14] text-gray-100">
+                                      <h1 className="text-6xl font-bold text-pink-500">404</h1>
+                                    <p className="mt-4 text-xl text-gray-300">Uh oh! Page Not Found! 🦄</p>
+                                 </div>
+                              </RouteWrapper>
+                            } />
                           </Routes>
                         </AnimatePresence>
                         <CookieConsentBanner />
-                      </ErrorBoundary>
-                    </ProductLightboxProvider>
+                      </div>
+                    </CookieConsentProvider>
                   </ImageLightboxProvider>
+                </ProductLightboxProvider>
               </CartProvider>
             </ProgressProvider>
           </AuthModalProvider>
         </AuthProvider>
-      </CookieConsentProvider>
+      </ErrorBoundary>
     </HelmetProvider>
   );
 }

@@ -3,7 +3,7 @@ import PageHelmet from '@/components/PageHelmet';
 import ContentSection from '@/components/ContentSection';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export default function ForgotPasswordPage(){
 	const supabase = useSupabaseClient();

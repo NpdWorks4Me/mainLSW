@@ -1,1 +1,0 @@
-import{j as t}from"./index-990712f9.js";import{A as e}from"./ArticleRenderer-7d9066b2.js";import{b as s}from"./blogPosts-6025aef2.js";import"./Breadcrumbs-8ccadf65.js";import"./ContentSection-08985ffb.js";import"./OptimizedBlogImage-bed5455c.js";function g(){const r=s.find(o=>o.slug.includes("therapeutic-age-regression"));return t.jsx(e,{post:r})}export{g as default};
