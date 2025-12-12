@@ -1,0 +1,17 @@
+name: GitHub Actions Hello Test
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Say Hello
+        run: |
+          echo "Hello from GitHub Actions run"
+          echo "branch: $GITHUB_REF"
+          echo "sha: $GITHUB_SHA"
