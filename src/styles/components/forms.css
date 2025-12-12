@@ -1,0 +1,34 @@
+.rich-text-editor .ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border-color: rgba(255,255,255,0.2) !important;
+}
+
+.rich-text-editor .ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  border-color: rgba(255,255,255,0.2) !important;
+  min-height: 200px;
+  font-size: 1rem;
+}
+
+.rich-text-editor .ql-editor {
+  color: white;
+}
+
+.rich-text-editor .ql-stroke {
+  stroke: rgba(255,255,255,0.7) !important;
+}
+
+.rich-text-editor .ql-fill {
+  fill: rgba(255,255,255,0.7) !important;
+}
+
+.rich-text-editor .ql-picker-label {
+  color: rgba(255,255,255,0.7) !important;
+}
+
+.rich-text-editor .ql-picker-options {
+  background-color: #1f2937;
+  border-color: rgba(255,255,255,0.2) !important;
+}

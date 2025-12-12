@@ -1,0 +1,217 @@
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBJoioOmvv3qWzK7wjrURhElhCNDs/YZttwc15wiVHoI jeana@littlespaceworld.com
+
+
+
+# Little Space World — Monorepo
+
+A two-app monorepo for Little Space World:
+- Main public site: Vite/React app (static build, deployed to Hostinger)
+- Admin dashboard: Next.js 16 (App Router) dynamic app, deployed to Vercel
+
+This README covers architecture, local dev, deployment, the bundle builder, and a debugging & audit checklist.
+
+---
+
+## Architecture Overview
+
+- /src — Main Vite/React site (static)
+- /app — Admin dashboard (Next.js App Router)
+- /admin — static export (used only in prior builds / optional)
+- /scripts — build helpers (export, etc.)
+- /next.config.mjs — Next.js config (App Router)
+- /package.json — monorepo root scripts
+- /admin/package.json — static admin metadata (if used)
+- .vercelignore, vercel.json — Vercel configuration (one or both apps)
+
+### How apps are hosted
+- Main site: Hostinger (static `dist/` build)
+- Admin site: Vercel (dynamic Next.js)
+
+Both apps share backend resources (Supabase, Stripe).
+
+---
+
+## Quick Start — Local development
+
+Prereqs:
+- Node 20+ and npm
+- Vercel CLI (optional)
+- Git
+
+1. Clone
+   git clone git@github.com:NpdWorks4Me/main.git
+2. Install
+   npm install
+3. Run apps:
+   - Main (Vite):
+     cd src && npm install && npm run dev
+   - Admin (Next.js):
+     cd . && npm run dev:admin  # or run `next dev` at repository root targeting /app
+
+Check `package.json` scripts for exact commands.
+
+---
+
+## Admin (Next.js) — Developer Notes
+
+- Uses Next.js 16 App Router with server components.
+- Ensure `next`, `react`, and `react-dom` exist in dependencies (not only devDependencies).
+- Environment variables:
+  - NEXT_PUBLIC_SUPABASE_URL
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY
+  - SUPABASE_SERVICE_ROLE (server only)
+  - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  - STRIPE_SECRET_KEY (server only)
+- To run locally:
+  npm run dev:admin
+- Build and export (if needed):
+  npm run build:admin   # For static export (if you prefer)
+  npm run vercel-build  # If custom vercel-build script present
+
+---
+
+## Admin Dynamic Deployment to Vercel — Steps
+
+1. Vercel project: js-projects-1788e21a/admin (project id: prj_aNITgq7TqCHyBaqMo4BSQaD6Dcr1)
+2. Set Root Directory:
+   - If deploying the Next.js app from repository root: Root Directory = `.`
+   - If deploying from subfolder with source: set that path
+3. Framework Preset:
+   - Set to `Next.js`
+4. Build & Output:
+   - Build Command: empty or `npm run vercel-build` (if provided)
+   - Install Command: `npm install`
+   - Output Directory: leave blank (Next.js uses `.next`)
+5. Environment Variables:
+   - Add required NEXT_PUBLIC_* keys and server keys as protected values
+6. Redeploy:
+   - Redeploy without cache; watch build logs
+   - Success expected: "Detected Next.js version: 16.x.x"
+
+If `No Next.js version detected` error occurs:
+- Confirm `next` exists in package.json of the configured root directory
+- Confirm package.json actually exists in that folder
+- Use `vercel.json` to pin `buildCommand` or `rootDirectory` if a monorepo
+
+---
+
+## Hostinger — Main Site Deploy
+
+- Build:
+  cd src && npm run build
+- Output:
+  dist/ (Hostinger static hosting)
+- Domain:
+  littlespaceworld.com — add DNS, upload site files or use CI
+
+If using reverse proxy/SSR at Hostinger: configure Nginx/PM2 and a build pipeline.
+
+---
+
+## Bundle Builder (Custom Configurator) — Overview
+
+Located in the admin app as a reusable component (SPA/tsx):
+
+Key features:
+- Drag-and-drop (use `react-beautiful-dnd` or `react-dnd`) mobile friendly
+- `availableProducts`: fetched array of product objects: {id, name, price, inventory, imageUrl, group}
+- State:
+  - `bundleState` via Context/Reducer (BundleProvider)
+  - `selectedItems`: [{ id, name, price, quantity, group, imageUrl }]
+  - `totalCost`, `remainingSlots`, `validationErrors`
+- Validation Rules:
+  - Min items: 3
+  - Max items: 8
+  - Required group: at least one from `Required_Base`
+  - Pricing: totalCost = sum(price * quantity)
+- Behavior:
+  - Drag from Source (inventory) to Target (Gift Box)
+  - Dropping same item increments quantity
+  - Removal via X button or click-and-hold
+  - Visual rejection when violating a rule (snap back)
+  - Checkout disabled if validationErrors not empty
+
+Exports:
+- `finalizeBundle()` returns JSON string: e.g., [{"id":"A1","q":2},{"id":"B3","q":1}]
+- Integrate finalizeBundle to add slot product + bundle metadata to cart (Shopify/WooCommerce API)
+
+---
+
+## Integration Notes
+
+1. Create a slot product: `CUSTOM-BUNDLE-SLOT`
+2. At checkout:
+   - Add slot product to cart
+   - Attach serialized JSON as line item metadata
+3. Post-checkout:
+   - Backend webhook reads metadata, reduces inventory quantities accordingly
+   - Fulfillment team uses metadata to pack items
+
+---
+
+## Testing and QA
+
+- Manual:
+  - Test drag & drop on mobile (touch), test quantity increment, removal
+  - Validate UI error flows (dropping too many items)
+- Automated:
+  - Unit tests: Jest (bundle reducer + validation)
+  - E2E: Playwright tests for drag-and-drop flows & checkout serialization
+- Build verification:
+  - On local machine: npx vercel build  (check framework detection)
+  - On Vercel: redeploy and watch logs (install time should be realistic > 5s for real projects)
+
+---
+
+## Migration & Audit Checklist
+
+When migrating or debugging:
+1. package.json — confirm `next`, `react`, `react-dom` in dependencies
+2. Root Directory — correct in Vercel Settings
+3. next.config.mjs — ensure `output: 'export'` is not forced for Vercel dynamic builds (use env VERCEL=1 to toggle)
+4. Avoid window/document usage during SSR (wrap or dynamic import with ssr:false)
+5. Ensure images.domains configured in next.config.mjs
+6. Separate public & server env vars (prefix with NEXT_PUBLIC_ where appropriate)
+7. Avoid shipping .next or dist in repo unless GitHub Pages/Hostinger expects static files
+8. Validate .vercelignore doesn't exclude package.json or app directories
+9. Add vercel-build script where necessary:
+   - "vercel-build": "next build" (or custom build steps)
+10. If monorepo, configure per-project root settings or use a single monorepo-aware setup
+
+---
+
+## Security & Environment
+
+- Secrets:
+  - Keep server-only keys out of client bundles (no NEXT_PUBLIC prefix)
+  - Vercel environment variables: set as "Environment Variable" with Production scope and masking
+- Use service roles for server tasks (e.g., inventory deduction)
+
+---
+
+## Contributors
+
+- NpdWorks4Me — Primary dev
+- See `CONTRIBUTING.md` (if available) for PR and code review guidelines
+
+---
+
+## Quick Troubleshooting
+
+- 404 on root domain: confirm root `app/page.tsx` or redirect and verify admin routes
+- 404 on admin: check Next.js app router routes, ensure pages exist (app/+server/ or app/page.tsx)
+- Next.js not detected on Vercel: check root directory and package.json `next` entry
+- Static vs dynamic: ensure next.config.mjs `output` toggles appropriately based on `process.env.VERCEL`
+
+---
+
+## Contact & Links
+
+- GitHub for Main : https://github.com/NpdWorks4Me/main.git
+- Vercel admin project: vercel.com/js-projects-1788e21a/admin
+
+---
+
+## License
+
+Project license: MIT (adjust if needed)

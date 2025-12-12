@@ -1,0 +1,782 @@
+{
+  "generatedAt": "2025-12-07T06:03:25.580Z",
+  "projectRoot": "/Users/npdworks4me/Downloads/horizons-export-68470a32-d856-4001-aa04-6ef3f0b873ca (1)",
+  "filesScanned": 184,
+  "routesFound": 48,
+  "linksFound": 57,
+  "routes": [
+    {
+      "path": "/",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "explore",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "blog",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "littlespace",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "littlespace/what-is-littlespace-a-simple-guide-for-new-age-regressors",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "littlespace/my-little-secrets-because-adulting-is-literally-not-it",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "littlespace/am-i-really-an-age-regressor",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "littlespace/5-littlespace-bedtime-rituals-for-the-best-sleep",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "littlespace/age-regression-vs-pet-regression-whats-the-difference",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "littlespace/age-regression-friends",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "inner-child",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "inner-child/inner-child-journaling-prompt-kit",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "mental-health",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "mental-health/therapeutic-age-regression-honest-coping-skill",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "young-adult",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "young-adult/5-steps-to-surviving-young-adulthood",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "create",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "create/create-your-littlespace-diy-decor-cozy-nooks-and-sensory-faves",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "advocacy",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "resources",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "coloring-pages",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "guidance-and-support",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "about",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "privacy",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "terms",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "cookie-policy",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "contact",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "confirmation",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper",
+        "ProtectedRoute"
+      ]
+    },
+    {
+      "path": "/auth/confirm",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "ProtectedRoute",
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "profile",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "store",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "product/:id",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "success",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "stories",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "storytime",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "login",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "signup",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "forgot-password",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "reset-password",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "quizzes",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "quizzes/super-you",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "quizzes/comfort-functions",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "self-help",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "safety",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "advice",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "community-qa",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": [
+        "RouteWrapper"
+      ]
+    },
+    {
+      "path": "*",
+      "files": [
+        "src/App.jsx"
+      ],
+      "components": []
+    }
+  ],
+  "links": [
+    {
+      "to": "/",
+      "file": "src/components/Breadcrumbs.jsx",
+      "line": 11,
+      "snippet": "<Link to=\"/\""
+    },
+    {
+      "to": "/quizzes",
+      "file": "src/components/ComfortFunctionsQuiz.jsx",
+      "line": 245,
+      "snippet": "<Link to=\"/quizzes\""
+    },
+    {
+      "to": "/coloring-pages",
+      "file": "src/components/ContestWinner.jsx",
+      "line": 88,
+      "snippet": "<Link to=\"/coloring-pages\""
+    },
+    {
+      "to": "/cookie-policy",
+      "file": "src/components/CookieConsentBanner.jsx",
+      "line": 42,
+      "snippet": "<Link to=\"/cookie-policy\""
+    },
+    {
+      "to": "/product/${product.id}",
+      "file": "src/components/FeaturedStoreProducts.jsx",
+      "line": 28,
+      "snippet": "navigate(`/product/${product.id}`)"
+    },
+    {
+      "to": "/explore",
+      "file": "src/components/GalacticHeroSection.jsx",
+      "line": 262,
+      "snippet": "<Link to=\"/explore\""
+    },
+    {
+      "to": "/blog",
+      "file": "src/components/GalacticHeroSection.jsx",
+      "line": 314,
+      "snippet": "<Link to=\"/blog\""
+    },
+    {
+      "to": "/store",
+      "file": "src/components/GalacticHeroSection.jsx",
+      "line": 334,
+      "snippet": "<Link to=\"/store\""
+    },
+    {
+      "to": "/",
+      "file": "src/components/Layout.jsx",
+      "line": 96,
+      "snippet": "<Link to=\"/\""
+    },
+    {
+      "to": "/product/${product.id}",
+      "file": "src/components/ProductsList.jsx",
+      "line": 50,
+      "snippet": "navigate(`/product/${product.id}`)"
+    },
+    {
+      "to": "/quizzes",
+      "file": "src/components/SuperYouQuiz.jsx",
+      "line": 397,
+      "snippet": "navigate('/quizzes')"
+    },
+    {
+      "to": "/forgot-password",
+      "file": "src/components/auth/LoginForm.jsx",
+      "line": 82,
+      "snippet": "<Link to=\"/forgot-password\""
+    },
+    {
+      "to": "/profile",
+      "file": "src/components/auth/UserNav.jsx",
+      "line": 87,
+      "snippet": "<Link to=\"/profile\""
+    },
+    {
+      "to": "/",
+      "file": "src/components/auth/UserNav.jsx",
+      "line": 31,
+      "snippet": "navigate('/')"
+    },
+    {
+      "to": "/user/${profile.nickname}",
+      "file": "src/components/comments/CommentSection.jsx",
+      "line": 61,
+      "snippet": "navigate(`/user/${profile.nickname}`)"
+    },
+    {
+      "to": "/littlespace",
+      "file": "src/pages/BlogListPage.jsx",
+      "line": 131,
+      "snippet": "<Link to=\"/littlespace\""
+    },
+    {
+      "to": "/inner-child",
+      "file": "src/pages/BlogListPage.jsx",
+      "line": 132,
+      "snippet": "<Link to=\"/inner-child\""
+    },
+    {
+      "to": "/mental-health",
+      "file": "src/pages/BlogListPage.jsx",
+      "line": 133,
+      "snippet": "<Link to=\"/mental-health\""
+    },
+    {
+      "to": "/young-adult",
+      "file": "src/pages/BlogListPage.jsx",
+      "line": 134,
+      "snippet": "<Link to=\"/young-adult\""
+    },
+    {
+      "to": "/create",
+      "file": "src/pages/BlogListPage.jsx",
+      "line": 135,
+      "snippet": "<Link to=\"/create\""
+    },
+    {
+      "to": "/coloring-pages",
+      "file": "src/pages/BlogPostAgeRegression.jsx",
+      "line": 441,
+      "snippet": "<Link to=\"/coloring-pages\""
+    },
+    {
+      "to": "/littlespace/my-little-secrets",
+      "file": "src/pages/BlogPostSurvivingYoungAdulthood.jsx",
+      "line": 146,
+      "snippet": "<Link to=\"/littlespace/my-little-secrets\""
+    },
+    {
+      "to": "/create/create-your-littlespace-diy-decor-cozy-nooks-and-sensory-faves",
+      "file": "src/pages/BlogPostSurvivingYoungAdulthood.jsx",
+      "line": 179,
+      "snippet": "<Link to=\"/create/create-your-littlespace-diy-decor-cozy-nooks-and-sensory-faves\""
+    },
+    {
+      "to": "/littlespace/what-is-littlespace",
+      "file": "src/pages/BlogPostTherapeuticAgeRegression.jsx",
+      "line": 100,
+      "snippet": "<Link to=\"/littlespace/what-is-littlespace\""
+    },
+    {
+      "to": "/young-adult/5-steps-to-surviving-young-adulthood",
+      "file": "src/pages/BlogPostTherapeuticAgeRegression.jsx",
+      "line": 102,
+      "snippet": "<Link to=\"/young-adult/5-steps-to-surviving-young-adulthood\""
+    },
+    {
+      "to": "/login",
+      "file": "src/pages/ConfirmationPage.jsx",
+      "line": 106,
+      "snippet": "<Link to=\"/login\""
+    },
+    {
+      "to": "/",
+      "file": "src/pages/ConfirmationPage.jsx",
+      "line": 112,
+      "snippet": "<Link to=\"/\""
+    },
+    {
+      "to": "/privacy",
+      "file": "src/pages/CookiePolicyPage.jsx",
+      "line": 107,
+      "snippet": "<Link to=\"/privacy\""
+    },
+    {
+      "to": "/blog",
+      "file": "src/pages/ExplorePage.jsx",
+      "line": 149,
+      "snippet": "<Link to=\"/blog\""
+    },
+    {
+      "to": "/coloring-pages",
+      "file": "src/pages/ExplorePage.jsx",
+      "line": 160,
+      "snippet": "<Link to=\"/coloring-pages\""
+    },
+    {
+      "to": "/login",
+      "file": "src/pages/ForgotPasswordPage.jsx",
+      "line": 87,
+      "snippet": "<Link to=\"/login\""
+    },
+    {
+      "to": "/store",
+      "file": "src/pages/HomePage.jsx",
+      "line": 211,
+      "snippet": "<Link to=\"/store\""
+    },
+    {
+      "to": "/blog",
+      "file": "src/pages/HomePage.jsx",
+      "line": 224,
+      "snippet": "<Link to=\"/blog\""
+    },
+    {
+      "to": "/explore",
+      "file": "src/pages/HomePage.jsx",
+      "line": 239,
+      "snippet": "<Link to=\"/explore\""
+    },
+    {
+      "to": "/games",
+      "file": "src/pages/HomePage.jsx",
+      "line": 254,
+      "snippet": "<Link to=\"/games\""
+    },
+    {
+      "to": "/about",
+      "file": "src/pages/HomePage.jsx",
+      "line": 269,
+      "snippet": "<Link to=\"/about\""
+    },
+    {
+      "to": "/forgot-password",
+      "file": "src/pages/LoginPage.jsx",
+      "line": 90,
+      "snippet": "<Link to=\"/forgot-password\""
+    },
+    {
+      "to": "/signup",
+      "file": "src/pages/LoginPage.jsx",
+      "line": 99,
+      "snippet": "<Link to=\"/signup\""
+    },
+    {
+      "to": "/profile",
+      "file": "src/pages/LoginPage.jsx",
+      "line": 38,
+      "snippet": "navigate('/profile')"
+    },
+    {
+      "to": "/",
+      "file": "src/pages/ProductDetailPage.jsx",
+      "line": 475,
+      "snippet": "<Link to=\"/\""
+    },
+    {
+      "to": "/store",
+      "file": "src/pages/ProductDetailPage.jsx",
+      "line": 477,
+      "snippet": "<Link to=\"/store\""
+    },
+    {
+      "to": "/login",
+      "file": "src/pages/ProfilePage.jsx",
+      "line": 152,
+      "snippet": "<Link to=\"/login\""
+    },
+    {
+      "to": "/login",
+      "file": "src/pages/ResetPasswordPage.jsx",
+      "line": 62,
+      "snippet": "navigate('/login')"
+    },
+    {
+      "to": "/guidance-and-support",
+      "file": "src/pages/SafetyPage.jsx",
+      "line": 109,
+      "snippet": "<Link to='/guidance-and-support'"
+    },
+    {
+      "to": "/contact",
+      "file": "src/pages/SafetyPage.jsx",
+      "line": 228,
+      "snippet": "<Link to=\"/contact\""
+    },
+    {
+      "to": "/contact",
+      "file": "src/pages/SelfHelpPage.jsx",
+      "line": 257,
+      "snippet": "<Link to=\"/contact\""
+    },
+    {
+      "to": "/about",
+      "file": "src/pages/SelfHelpPage.jsx",
+      "line": 260,
+      "snippet": "<Link to=\"/about\""
+    },
+    {
+      "to": "/login",
+      "file": "src/pages/SignUpPage.jsx",
+      "line": 112,
+      "snippet": "<Link to=\"/login\""
+    },
+    {
+      "to": "/confirmation",
+      "file": "src/pages/SignUpPage.jsx",
+      "line": 39,
+      "snippet": "navigate('/confirmation')"
+    },
+    {
+      "to": "/store",
+      "file": "src/pages/SuccessPage.jsx",
+      "line": 44,
+      "snippet": "<Link to=\"/store\""
+    },
+    {
+      "to": "/",
+      "file": "src/pages/SuccessPage.jsx",
+      "line": 49,
+      "snippet": "<Link to=\"/\""
+    },
+    {
+      "to": "/littlespace/what-is-littlespace",
+      "file": "src/pages/pillars/LittlespacePillar.jsx",
+      "line": 31,
+      "snippet": "<Link to=\"/littlespace/what-is-littlespace\""
+    },
+    {
+      "to": "/littlespace/age-regression-friends",
+      "file": "src/pages/pillars/LittlespacePillar.jsx",
+      "line": 34,
+      "snippet": "<Link to=\"/littlespace/age-regression-friends\""
+    },
+    {
+      "to": "/littlespace/am-i-really-an-age-regressor",
+      "file": "src/pages/pillars/LittlespacePillar.jsx",
+      "line": 37,
+      "snippet": "<Link to=\"/littlespace/am-i-really-an-age-regressor\""
+    },
+    {
+      "to": "/littlespace/5-littlespace-bedtime-rituals",
+      "file": "src/pages/pillars/LittlespacePillar.jsx",
+      "line": 40,
+      "snippet": "<Link to=\"/littlespace/5-littlespace-bedtime-rituals\""
+    },
+    {
+      "to": "/littlespace/my-little-secrets",
+      "file": "src/pages/pillars/LittlespacePillar.jsx",
+      "line": 43,
+      "snippet": "<Link to=\"/littlespace/my-little-secrets\""
+    }
+  ],
+  "components": {
+    "@/components/auth/ProtectedRoute": {
+      "files": [
+        "src/App.jsx",
+        "src/App.jsx"
+      ],
+      "inferredComponentNames": [
+        "ProtectedRoute",
+        "ProtectedRoute"
+      ]
+    }
+  }
+}

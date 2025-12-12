@@ -1,0 +1,11 @@
+name: Deprecated Build Workflow - Use hostinger-deploy.yml
+
+on: []
+
+jobs:
+	deprecated:
+		runs-on: ubuntu-latest
+		if: false
+		steps:
+			- name: Deprecated workflow
+				run: echo "This workflow is deprecated; use .github/workflows/hostinger-deploy.yml instead"

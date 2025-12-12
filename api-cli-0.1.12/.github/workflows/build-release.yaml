@@ -1,0 +1,26 @@
+name: build-release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo checkout
+        uses: actions/checkout@v4
+
+      - name: Bump version and push tag
+        id: bump
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: main
+
+      - name: Release tag
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.bump.outputs.new_tag }}
+          generateReleaseNotes: true

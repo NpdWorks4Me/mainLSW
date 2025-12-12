@@ -1,0 +1,1 @@
+// This file is no longer needed and its content is removed to clean up the project.

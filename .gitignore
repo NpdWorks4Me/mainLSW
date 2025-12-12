@@ -1,0 +1,14 @@
+node_modules/
+dist/
+public_html
+.DS_Store
+*.log
+coverage/
+playwright-report/
+/.env
+/.env.local
+/.env.*.local
+*.local
+.idea/
+/.vscode/
+.vercel

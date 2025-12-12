@@ -1,0 +1,163 @@
+/* Base Button Interactions */
+.button-ripple {
+  position: relative;
+  overflow: hidden;
+  will-change: transform, box-shadow;
+}
+
+.button-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 179, 186, 0.5); /* #FFB3BA */
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.button-ripple:active::after {
+  animation: ripple 0.3s ease-in-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0) translate(-50%, -50%);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(20, 20) translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+/* Success/Error Animations */
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 #FFB3BA);
+  }
+  50% {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 8px #FFB3BA);
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 #FFB3BA);
+  }
+}
+
+.animate-heart-pop {
+  animation: heart-pop 0.3s ease-in-out;
+}
+
+@keyframes soft-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+@keyframes error-glow {
+  from { box-shadow: 0 0 0 #BAE1FF; }
+  to { box-shadow: 0 0 10px 2px #BAE1FF; }
+}
+
+.animate-soft-shake {
+  animation: soft-shake 0.3s ease-in-out, error-glow 0.3s ease-in-out alternate;
+}
+
+/* Pop Star Effect for Links/Nav */
+@keyframes pop-star {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.interactive-star-effect {
+  position: relative;
+  overflow: visible;
+}
+
+.interactive-star-effect::after {
+  content: '✨';
+  position: absolute;
+  top: -0.5em;
+  right: -0.5em;
+  font-size: 1em;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 5px var(--neon-yellow);
+}
+
+.interactive-star-effect:hover::after {
+  animation: pop-star 0.6s ease-in-out;
+}
+
+.dark .interactive-star-effect::after {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px var(--neon-yellow);
+}
+
+/* Forum Thread/Modal Open Animation */
+@keyframes expand-from-center {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-expand {
+    animation: expand-from-center 0.3s ease-in-out forwards;
+    will-change: transform, opacity;
+}
+
+/* Etsy Shop Link Styles */
+.etsy-shop-link {
+    position: relative;
+    overflow: hidden;
+    color: var(--text-color) !important;
+    background: linear-gradient(135deg, rgba(186, 255, 201, 0.3), rgba(186, 225, 255, 0.3));
+    border: 1px solid transparent;
+}
+
+.dark .etsy-shop-link {
+    background: linear-gradient(135deg, var(--neon-green-transparent), var(--neon-blue-transparent));
+    border-color: var(--neon-green);
+}
+
+.etsy-shop-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(186, 255, 201, 0.5);
+  background-position: 100% 0;
+}
+
+.dark .etsy-shop-link:hover {
+  box-shadow: 0 0 15px var(--neon-green);
+}
+
+.etsy-sparkle {
+  transition: transform 0.4s ease-in-out, filter 0.4s ease-in-out;
+}
+
+.etsy-shop-link:hover .etsy-sparkle {
+  transform: scale(1.4) rotate(45deg);
+  filter: drop-shadow(0 0 8px #fde047); /* Tailwind yellow-400 */
+}

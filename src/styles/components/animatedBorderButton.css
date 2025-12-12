@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css?family=Squada+One');
+
+.animated-border-btn {
+  position: relative;
+  width: 180px;
+  height: 50px;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 50px;
+  font-family: 'Squada One', cursive;
+  font-size: 16px;
+  display: block;
+}
+
+.animated-border-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  background: linear-gradient(120deg, #3B82F6, #A855F7, #3B82F6);
+  background-size: 400% 400%;
+  clip-path: polygon(0% 100%, 4px 100%, 4px 4px, calc(100% - 4px) 4px, calc(100% - 4px) calc(100% - 4px), 4px calc(100% - 4px), 4px 100%, 100% 100%, 100% 0%, 0% 0%);
+  animation: gradient-anim 6s ease-in-out infinite, border-anim 1s forwards ease-in-out reverse;
+}
+
+.animated-border-btn:hover::after {
+  animation: gradient-anim 6s ease-in-out infinite, border-anim 1s forwards ease-in-out;
+}
+
+.animated-border-btn > span {
+  display: block;
+  background: linear-gradient(120deg, #3B82F6, #A855F7, #3B82F6);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-anim 6s ease-in-out infinite;
+}
+
+@keyframes gradient-anim { 
+  0%   { background-position: 14% 0%; }
+  50%  { background-position: 87% 100%; }
+  100% { background-position: 14% 0%; }
+}
+
+@keyframes border-anim {
+  0%    { clip-path: polygon(0% 100%, 4px 100%, 4px 4px, calc(100% - 4px) 4px, calc(100% - 4px) calc(100% - 4px), 4px calc(100% - 4px), 4px 100%, 100% 100%, 100% 0%, 0% 0%); }
+  25%   { clip-path: polygon(0% 100%, 4px 100%, 4px 4px, calc(100% - 4px) 4px, calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 100% 100%, 100% 0%, 0% 0%); }
+  50%   { clip-path: polygon(0% 100%, 4px 100%, 4px 4px, calc(100% - 4px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 4px, 100% 0%, 0% 0%); }
+  75%   { clip-path: polygon(0% 100%, 4px 100%, 4px 4px, 4px 4px, 4px 4px, 4px 4px, 4px 4px, 4px 4px, 4px 0%, 0% 0%); }
+  100%  { clip-path: polygon(0% 100%, 4px 100%, 4px 100%, 4px 100%, 4px 100%, 4px 100%, 4px 100%, 4px 100%, 4px 100%, 0% 100%); }
+}

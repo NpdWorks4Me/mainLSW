@@ -1,0 +1,240 @@
+.game-card {
+  background: linear-gradient(135deg, var(--glass-gradient-from), var(--glass-gradient-to));
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 1.5rem; /* Existing rounded corners */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform, box-shadow;
+}
+
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.dark .game-card:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2), 0 0 15px var(--neon-blue);
+}
+
+.forum-category-card {
+  background: linear-gradient(135deg, rgba(245, 245, 245, 0.1), rgba(224, 224, 224, 0.05));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: 15px; /* Existing rounded corners */
+  padding: 1rem;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.forum-category-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+/* Refined Product Card Style to match Game Card & Site Aesthetics */
+.product-card-glow {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem; /* Consistent 24px radius */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card-glow:hover {
+  border-color: rgba(244, 114, 182, 0.4); /* Pink-400 border on hover */
+  box-shadow: 
+    0 12px 30px -10px rgba(0, 0, 0, 0.5),
+    0 0 20px -5px rgba(236, 72, 153, 0.2); /* Pink glow */
+  transform: translateY(-6px);
+}
+
+.callout-box {
+  padding: 1.5rem;
+  border-radius: 1rem; /* Existing rounded corners */
+  border-left-width: 4px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.callout-box-purple {
+  background-color: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.6);
+  color: #e9d5ff;
+}
+
+.callout-box-pink {
+  background-color: rgba(236, 72, 153, 0.1);
+  border-color: rgba(236, 72, 153, 0.6);
+  color: #fbcfe8;
+}
+
+.callout-box-yellow {
+  background-color: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.6);
+  color: #fef08a;
+}
+
+.poll-container-modern {
+    background: rgba(25, 25, 112, 0.2); /* MidnightBlue with transparency */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(75, 0, 130, 0.4); /* Indigo border */
+    border-radius: 1.5rem; /* Existing rounded corners */
+    padding: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    position: relative;
+    z-index: 1;
+}
+
+.poll-glow-container {
+    position: relative;
+}
+
+.poll-glow-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 1.5rem; /* Existing rounded corners */
+    padding: 1px;
+    background: linear-gradient(45deg, #4f46e5, #7c3aed, #0ea5e9);
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    z-index: 0;
+    filter: blur(15px);
+    opacity: 0.6;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.poll-glow-container:hover::before {
+    opacity: 0.9;
+}
+
+.poll-option-button {
+    background: linear-gradient(145deg, rgba(75, 0, 130, 0.3), rgba(0, 0, 139, 0.3));
+    border: 1px solid rgba(138, 43, 226, 0.5);
+    border-radius: 0.75rem; /* Existing rounded corners */
+    padding: 1rem;
+    min-height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.2s ease-in-out;
+}
+
+.poll-option-button:hover {
+    background: linear-gradient(145deg, rgba(75, 0, 130, 0.5), rgba(0, 0, 139, 0.5));
+    border-color: rgba(138, 43, 226, 0.8);
+    box-shadow: 0 0 20px rgba(75, 0, 130, 0.6);
+}
+
+.vote-pulse {
+  animation: vote-pulse-animation 0.5s ease-in-out;
+}
+
+@keyframes vote-pulse-animation {
+  0% { color: #0ea5e9; transform: scale(1); }
+  50% { color: #FFFFFF; transform: scale(1.1); }
+  100% { color: #0ea5e9; transform: scale(1); }
+}
+
+.holographic-card-wrapper {
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  height: 100%;
+}
+
+.holographic-card-wrapper:hover {
+  transform: translateY(-8px);
+}
+
+.holographic-card {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.holographic-card-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(1rem + 4px); /* Match card's border-radius + border width */
+  background: conic-gradient(from var(--angle), #BF00FF, #3B82F6, #BAFFC9, #BF00FF);
+  z-index: -1;
+  filter: blur(12px) opacity(0);
+  transition: filter 0.5s ease, opacity 0.5s ease;
+  animation: spin-angle 8s linear infinite;
+}
+
+.holographic-card-wrapper:hover::before {
+  filter: blur(12px) opacity(0.8);
+  opacity: 1;
+}
+
+.holographic-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.halloween-card-wrapper::before {
+  background: conic-gradient(from var(--angle), #FF7A00, #4B0082, #FF7A00);
+  filter: blur(10px) opacity(0.8);
+}
+.halloween-card-wrapper:hover::before {
+  filter: blur(12px) opacity(1);
+}
+.halloween-card-wrapper .holographic-card {
+  border-color: rgba(255, 122, 0, 0.5);
+}
+
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes spin-angle {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.enhanced-quote {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-left: 4px solid var(--neon-pink);
+  background: rgba(255, 0, 166, 0.05);
+  border-radius: 0 8px 8px 0; /* Changed this for rounded corners on the right side */
+  position: relative;
+  font-style: italic;
+  color: #f0d9e8;
+}
+
+.enhanced-quote::before {
+  content: '“';
+  position: absolute;
+  top: -10px;
+  left: -20px;
+  font-size: 4rem;
+  color: rgba(255, 0, 166, 0.2);
+  font-family: 'Georgia', serif;
+  z-index: -1;
+}
+
+.product-card, .blog-card, .activity-card, .glow-card {
+  aspect-ratio: 1/1;
+}

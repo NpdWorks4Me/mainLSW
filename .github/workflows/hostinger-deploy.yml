@@ -1,0 +1,18 @@
+name: DEPRECATED - hostinger-deploy (moved)
+
+# This workflow is deprecated and kept only for audit/history. Use
+# .github/workflows/hostinger-deploy-main.yml which only builds and deploys
+# the main Vite site (dist). The old workflow previously contained admin
+# build and deploy steps; those were removed to ensure CI only handles the
+# main site.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deprecation notice
+        run: |
+          echo "This workflow is deprecated — use .github/workflows/hostinger-deploy-main.yml which only deploys the main site."

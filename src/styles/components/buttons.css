@@ -1,0 +1,122 @@
+.btn-glow {
+  transition: all 0.3s ease;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 15px 2px rgba(186, 225, 255, 0.8), 0 0 25px 5px rgba(186, 255, 201, 0.6);
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.dark .btn-glow:hover {
+  box-shadow: 0 0 15px 2px var(--neon-blue), 0 0 25px 5px var(--neon-green);
+}
+
+/* Y2K Button Styles */
+.btn-y2k {
+  background: linear-gradient(90deg, #FF00CC 0%, #333399 100%);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 204, 0.5);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3);
+}
+
+.btn-y2k::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: 0.5s;
+  z-index: -1;
+  transform: skewX(-15deg);
+}
+
+.btn-y2k:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.5), 0 0 25px rgba(51, 51, 255, 0.8);
+  background: linear-gradient(90deg, #FF00CC 20%, #333399 80%);
+}
+
+.btn-y2k:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.btn-y2k:hover::before {
+  left: 100%;
+  transition: 0.5s;
+}
+
+.contest-submit-bg {
+    background: linear-gradient(135deg, rgba(245, 245, 245, 0.8), rgba(224, 224, 224, 0.6));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 0.75rem; /* 12px */
+}
+
+.contest-submit-bg:hover {
+    background: linear-gradient(135deg, #C3AED6, #BAFFC9);
+}
+
+.dark .contest-submit-bg {
+  background: linear-gradient(135deg, var(--glass-gradient-from), var(--glass-gradient-to));
+  border: 1px solid var(--neon-pink);
+}
+
+.dark .contest-submit-bg:hover {
+    background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+}
+
+.lightbox-close-button {
+  background: linear-gradient(135deg, #FFB3BA, #BAE1FF);
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lightbox-close-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.dark .lightbox-close-button {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-blue));
+}
+
+.add-to-cart-btn {
+  background: linear-gradient(135deg, #FFB3BA, #FFC3A0);
+  color: white;
+  font-weight: bold;
+  border: none;
+  transition: transform 0.2s ease-in-out;
+}
+
+.add-to-cart-btn:hover {
+  transform: scale(1.05);
+}
+
+.view-all-btn {
+  background: linear-gradient(135deg, #C3AED6, #BAE1FF);
+  color: white;
+  font-weight: bold;
+  border: none;
+}
+
+.carousel-arrow {
+  background-color: rgba(186, 225, 255, 0.5);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.2s ease;
+}
+
+.carousel-arrow:hover {
+  background-color: rgba(186, 225, 255, 0.8);
+  transform: scale(1.1);
+}

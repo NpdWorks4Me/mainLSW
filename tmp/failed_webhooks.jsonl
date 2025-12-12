@@ -1,0 +1,1 @@
+{"id":"sess_test_1234","type":"checkout.session.completed","session":{"id":"sess_test_1234","amount_total":5000},"received_at":"2025-12-08T23:41:04.941Z","error":"{}"}

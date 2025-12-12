@@ -1,0 +1,46 @@
+project_name: hapi
+version: 2
+builds:
+  - main: ./main.go
+    env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    flags:
+      - -mod=vendor
+      - -v
+    ldflags:
+      - -X github.com/hostinger/api-cli/utils.Build={{ .ShortCommit }}
+      - -X github.com/hostinger/api-cli/utils.Major={{ .Major }}
+      - -X github.com/hostinger/api-cli/utils.Minor={{ .Minor }}
+      - -X github.com/hostinger/api-cli/utils.Patch={{ .Patch }}
+    goos:
+      - windows
+      - darwin
+      - linux
+
+archives:
+  - name_template: "hapi-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    files: [a-workaround-to-include-only-the-binary*]
+    wrap_in_directory: false
+
+source:
+  enabled: true
+  name_template: 'hapi-{{ .Version }}-source'
+
+checksum:
+  name_template: "hapi-{{ .Version }}-checksums.sha256"
+
+#dockers:
+#  - dockerfile: Dockerfile.goreleaser
+#    image_templates:
+#      - "hostinger/hapi:latest"
+#      - "hostinger/hapi:{{ .Major }}-latest"
+#      - "hostinger/hapi:{{ .Version }}"
+
+release:
+  github:
+    owner: hostinger
+    name: api-cli
+
+changelog:
+  disable: false

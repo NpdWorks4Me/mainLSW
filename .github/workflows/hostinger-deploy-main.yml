@@ -1,0 +1,142 @@
+name: Build, Test, and Deploy to Hostinger (main only)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and Test (main)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build main site
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+        run: npm run build:main
+
+      - name: Validate main build is not admin (pre-deploy check)
+        run: npm run check:predeploy
+
+      - name: Ensure no admin artifacts are present in dist
+        run: npm run check:dist-no-admin
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright main store test
+        run: npx playwright test -c playwright.main.config.js tests/store.spec.js --project=chromium --reporter=html
+
+      - name: Verify games routes for regressions
+        run: npm run check:snake-route
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+
+      - name: Upload main artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  migrate-supabase:
+    name: Apply Supabase migrations
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: ${{ secrets.SUPABASE_DB_URL != '' }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Apply SQL migrations to Supabase (safe run)
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          echo "Applying migrations from supabase/migrations to $SUPABASE_DB_URL"
+          for f in supabase/migrations/*.sql; do
+            echo "Applying $f"
+            psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+  deploy:
+    name: Deploy to Hostinger
+    runs-on: ubuntu-latest
+    needs: [build-and-test, migrate-supabase]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download main artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Install lftp (for FTP fallback)
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Deploy main via SFTP
+        if: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY != '' }}
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_SSH_HOST }}
+          username: ${{ secrets.HOSTINGER_SSH_USERNAME }}
+          key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+          source: "dist/"
+          target: "${{ secrets.HOSTINGER_TARGET_DIR_MAIN || 'public_html' }}"
+
+      - name: Deploy main via FTP (fallback)
+        if: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY == '' && secrets.HOSTINGER_FTP_HOST != '' }}
+        env:
+          FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+          FTP_USER: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.HOSTINGER_FTP_PORT || 21 }}
+          FTP_DIR: ${{ secrets.HOSTINGER_TARGET_DIR_MAIN || 'public_html' }}
+        run: |
+          lftp -u "$FTP_USER","$FTP_PASS" -p $FTP_PORT $FTP_HOST -e "mirror -R --delete --verbose dist $FTP_DIR; quit"
+
+      - name: Verify deployment
+        if: ${{ secrets.HOSTINGER_SITE_URL != '' }}
+        env:
+          SITE_URL: ${{ secrets.HOSTINGER_SITE_URL }}
+        run: |
+          echo "Waiting for site to be ready..."
+          sleep 5
+          curl -I "$SITE_URL" || true
+
+      - name: Optionally update Hostinger site environment via API
+        if: ${{ secrets.HOSTINGER_API_TOKEN != '' && secrets.HOSTINGER_SITE_ID != '' }}
+        env:
+          HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+          HOSTINGER_SITE_ID: ${{ secrets.HOSTINGER_SITE_ID }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+        run: |
+          echo 'Updating Hostinger site env via the hostinger API (if available)';
+          node ./scripts/set-hostinger-env.js --site $HOSTINGER_SITE_ID --token $HOSTINGER_API_TOKEN --vars "STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET,NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" --api-url "https://api.hostinger.com/v1/sites/$HOSTINGER_SITE_ID/env" --method PATCH || true

@@ -1,0 +1,16 @@
+[Unit]
+Description=LittleSpaceWorld Webhook Server
+After=network.target
+
+[Service]
+Type=simple
+User=webhook
+WorkingDirectory=/var/www/webhook
+EnvironmentFile=/etc/webhook/env
+ExecStart=/usr/bin/node server/webhook.js
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

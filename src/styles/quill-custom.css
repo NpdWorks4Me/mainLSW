@@ -1,0 +1,65 @@
+.ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-top: 0 !important;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+}
+
+.ql-editor {
+  min-height: 150px;
+}
+
+.ql-editor.ql-blank::before {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-style: normal !important;
+}
+
+.ql-snow .ql-stroke {
+  stroke: #fff;
+}
+
+.ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill {
+  fill: #fff;
+}
+
+.ql-snow .ql-picker-label {
+  color: #fff !important;
+}
+
+.ql-snow .ql-picker-options {
+  background-color: #2d3748;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.ql-snow .ql-picker-item:hover,
+.ql-snow .ql-picker-item.ql-selected {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.ql-snow .ql-tooltip {
+  background-color: #2d3748;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+.ql-snow .ql-tooltip input[type=text] {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.ql-snow .ql-tooltip a.ql-action::after {
+  content: 'Save';
+}

@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap');
+
+.glowing-btn {
+    position: relative;
+    display: inline-block;
+    padding: 8px 14px;
+    margin: 10px 0;
+    color: #a78bfa;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: 0.5s;
+    letter-spacing: 1px;
+    font-size: 12px;
+    overflow: hidden;
+    font-family: 'Raleway', sans-serif;
+    font-weight: bold;
+}
+
+@media (min-width: 768px) {
+    .glowing-btn {
+        padding: 15px 25px;
+        margin: 20px 0;
+        letter-spacing: 2px;
+        font-size: 14px;
+    }
+}
+
+.glowing-btn:hover,
+.glowing-btn:active {
+    background: linear-gradient(45deg, #4f46e5, #c026d3);
+    color: #fff;
+    box-shadow: 0 0 5px #c026d3,
+        0 0 25px #c026d3,
+        0 0 50px #4f46e5,
+        0 0 100px #4f46e5;
+}
+
+/* ————————— Rectangular Animation Spans ————————— */
+.glowing-btn span {
+    position: absolute;
+    display: block;
+    will-change: transform;
+}
+
+.glowing-btn span:nth-child(1) {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #8b5cf6);
+    transform: translateX(-100%);
+    animation: animate1 3s linear infinite;
+}
+
+@keyframes animate1 {
+    0% { transform: translateX(-100%); }
+    50%, 100% { transform: translateX(100%); }
+}
+
+.glowing-btn span:nth-child(2) {
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, #8b5cf6);
+    transform: translateY(-100%);
+    animation: animate2 3s linear infinite;
+    animation-delay: 0.75s;
+}
+
+@keyframes animate2 {
+    0% { transform: translateY(-100%); }
+    50%, 100% { transform: translateY(100%); }
+}
+
+.glowing-btn span:nth-child(3) {
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(270deg, transparent, #4f46e5);
+    transform: translateX(100%);
+    animation: animate3 3s linear infinite;
+    animation-delay: 1.5s;
+}
+
+@keyframes animate3 {
+    0% { transform: translateX(100%); }
+    50%, 100% { transform: translateX(-100%); }
+}
+
+.glowing-btn span:nth-child(4) {
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(360deg, transparent, #4f46e5);
+    transform: translateY(100%);
+    animation: animate4 3s linear infinite;
+    animation-delay: 2.25s;
+}
+
+@keyframes animate4 {
+    0% { transform: translateY(100%); }
+    50%, 100% { transform: translateY(-100%); }
+}
+
+/* ————————— Pill / Rounded Logic ————————— */
+
+.glowing-btn--pill {
+    /* When pill mode is active, styling adjustments */
+    overflow: hidden !important; /* Ensure background fill clips to pill shape */
+}
+
+.glowing-btn-pill__container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.glowing-btn-pill__svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.glowing-btn-pill__base {
+    fill: none;
+    stroke: rgba(139, 92, 246, 0.2);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke; /* Ensures stroke stays crisp even if SVG stretches */
+}
+
+.glowing-btn-pill__snake {
+    fill: none;
+    stroke: #c026d3;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 30 70; /* Defines the length of the snake and the gap (Total 100 due to pathLength="100") */
+    animation: pillSnake 3s linear infinite;
+    vector-effect: non-scaling-stroke;
+}
+
+@keyframes pillSnake {
+    0% {
+        stroke-dashoffset: 100;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}

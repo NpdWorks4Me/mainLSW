@@ -1,0 +1,5 @@
+# No admin build output expected — admin removed from repo
+/.next
+/out
+/node_modules
+/dist
