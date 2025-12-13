@@ -28,4 +28,4 @@ jobs:
           head -n 10 /tmp/vercel_projects.json || true
           echo 'Attempting to parse projects using jq (handles array or object shapes)'
           # Use try to avoid "Cannot index array with string" errors when response is an array
-          cat /tmp/vercel_projects.json | jq 'try (.projects // .) catch . | if (type=="array" or type=="object") then (if type=="array" then .[] else . end) else empty end | {id: .id, name: .name, alias: .alias? | map(.alias?)?, git: (.gitRepository // .repo?.full_name // null)}'
+          cat /tmp/vercel_projects.json | jq 'try (.projects // .) catch . | if (type=="array" or type=="object") then (if type=="array" then .[] else . end) else empty end | {id: .id, name: .name, alias: (if .alias then (.alias | map(.alias // .)) else [] end), git: (if .gitRepository then .gitRepository elif (.repo and .repo.full_name) then .repo.full_name else null end)}'
