@@ -1,0 +1,24 @@
+name: Vercel Debug
+
+on:
+  workflow_dispatch:
+
+jobs:
+  list-projects:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show environment
+        run: |
+          echo "VERCEL_ORG_ID=${VERCEL_ORG_ID:-<not-set>}"
+          echo "VERCEL_PROJECT_ID=${VERCEL_PROJECT_ID:-<not-set>}"
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq curl
+
+      - name: Query Vercel projects (team/org)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          echo 'Fetching projects for VERCEL_ORG_ID=' "$VERCEL_ORG_ID"
+          curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v1/projects?teamId=$VERCEL_ORG_ID" | jq '.projects[] | {id: .id, name: .name, git: .gitRepository}'
