@@ -7,9 +7,9 @@
     "node": ">=20"
   },
 "scripts": {
-    "prebuild": "node ./scripts/check-env.js",
-    "generate-config": "node ./scripts/generate-config.js",
-    "check-config": "node ./scripts/check-config.js",
+  "prebuild": "node ./scripts/check-env.cjs",
+  "generate-config": "node ./scripts/generate-config.cjs",
+  "check-config": "node ./scripts/check-config.cjs",
 
   "vercel-build": "npm run generate-config && npm run check-config && echo 'vercel build unsupported: Next.js admin removed'",
   "build:main": "cd src && npm ci && npm run build",

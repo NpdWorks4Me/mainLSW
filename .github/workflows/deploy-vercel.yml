@@ -1,0 +1,54 @@
+name: Deploy to Vercel
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - deploy
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy (Vercel)
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Show node & npm
+        run: |
+          node --version
+          npm --version
+
+      - name: Ensure Vercel token is present
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then echo "VERCEL_TOKEN is not set in the repository secrets" && exit 1; fi
+
+      - name: Install root deps
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Validate dist exists
+        run: |
+          echo "Contents of dist/ (top-level)"
+          ls -la dist || (echo "dist does not exist" && exit 1)
+          if [ ! -f dist/index.html ]; then echo "dist/index.html missing" && exit 1; fi
+
+      - name: Print vercel version (debug)
+        run: npx --yes vercel --version || true
+
+      - name: Deploy to Vercel (CLI)
+        run: |
+          echo "Deploying dist/ to Vercel using VERCEL_TOKEN"
+          npx --yes vercel --cwd dist --token "$VERCEL_TOKEN" --prod --confirm
