@@ -62,12 +62,14 @@ jobs:
       - name: Deploy to Vercel (Action)
         if: env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
         uses: amondnet/vercel-action@v20
+        continue-on-error: true
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           zeit-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --confirm --cwd dist'
+          # Use --yes instead of deprecated --confirm
+          vercel-args: '--prod --yes --cwd dist'
 
       - name: Deploy to Vercel (CLI)
         run: |
