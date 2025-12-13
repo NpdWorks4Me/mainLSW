@@ -68,4 +68,12 @@ jobs:
             echo "VERCEL_PROJECT_ID present and VERCEL_ORG_ID missing; unsetting VERCEL_PROJECT_ID so CLI auto-detects project"
             unset VERCEL_PROJECT_ID
           fi
-          npx --yes vercel --cwd dist --token "$VERCEL_TOKEN" --prod --yes
+          # Prefer a prebuilt deployment which uploads static files and skips a remote build.
+          # This avoids Vercel trying to run a Next.js build when the project settings expect Next.
+          if npx --yes vercel deploy --help | grep -q -- '--prebuilt'; then
+            echo "Using vercel deploy --prebuilt to upload static assets and skip remote build"
+            npx --yes vercel deploy --prebuilt --cwd dist --token "$VERCEL_TOKEN" --prod --yes
+          else
+            echo "VERCEL CLI does not support --prebuilt on this version; falling back to normal deploy"
+            npx --yes vercel --cwd dist --token "$VERCEL_TOKEN" --prod --yes
+          fi
