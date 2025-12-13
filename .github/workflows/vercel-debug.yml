@@ -20,7 +20,12 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
+          set -euo pipefail
           echo 'Fetching projects for VERCEL_ORG_ID=' "$VERCEL_ORG_ID"
-          curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v1/projects?teamId=$VERCEL_ORG_ID" -o /tmp/vercel_projects.json
-          echo 'Raw response saved to /tmp/vercel_projects.json'
-          cat /tmp/vercel_projects.json | jq '(.projects // .) | .[] | {id: .id, name: .name, git: .gitRepository}'
+          STATUS=$(curl -s -w "%{http_code}" -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v1/projects?teamId=$VERCEL_ORG_ID" -o /tmp/vercel_projects.json)
+          echo "HTTP status: $STATUS"
+          echo "Raw response (first 10 lines):"
+          head -n 10 /tmp/vercel_projects.json || true
+          echo 'Attempting to parse projects using jq (handles array or object shapes)'
+          # Use try to avoid "Cannot index array with string" errors when response is an array
+          cat /tmp/vercel_projects.json | jq 'try .projects catch . | .[] | {id: .id, name: .name, git: (.gitRepository // .repo?.full_name // null)}'
