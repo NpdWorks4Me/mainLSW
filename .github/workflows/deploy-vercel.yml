@@ -72,9 +72,10 @@ jobs:
       - name: Deploy to Vercel (Action)
         if: env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
         uses: amondnet/vercel-action@v20
-        continue-on-error: true
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          # NOTE: the action still requires `zeit-token` as an input (deprecated name).
+          # Keep it for now for compatibility; remove once the action no longer requires it.
           zeit-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -106,14 +107,17 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_SSO_BYPASS_TOKEN: ${{ secrets.VERCEL_SSO_BYPASS_TOKEN }}
+          # Optional secret flag to allow treating API READY as success when bypass token is not available.
+          ALLOW_READYSTATE_FALLBACK: ${{ secrets.ALLOW_READYSTATE_FALLBACK }}
         run: |
           set -euo pipefail
           echo "Fetching project info for $VERCEL_PROJECT_ID"
           curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v1/projects/$VERCEL_PROJECT_ID" -o /tmp/project.json
           echo "Raw project info saved to /tmp/project.json (first 200 chars):"
           head -c 200 /tmp/project.json || true
-          # Try to extract a usable URL from latestDeployments or targets
-          URL=$(jq -r '(.latestDeployments[0].url // .latestDeployments[0].alias[0] // .latestDeployments[0].deploymentHostname // .targets.production.alias[0] // .alias[0]) // empty' /tmp/project.json)
+
+          # Prefer aliases (custom domains) when available, then fallback to latest deployment url
+          URL=$(jq -r '(.alias // [] | select(length>0) | .[0]) // .latestDeployments[0].url // empty' /tmp/project.json)
           if [ -z "$URL" ]; then
             echo "Could not determine deployment URL from project metadata" >&2
             cat /tmp/project.json
@@ -122,34 +126,51 @@ jobs:
           echo "Detected deployment host: $URL"
 
           echo "Attempting public GET https://$URL"
-          STATUS=$(curl -s -o /tmp/smoke.html -w "%{http_code}" -L "https://$URL")
-          echo "HTTP status: $STATUS"
+          STATUS=$(curl -s -o /tmp/smoke.html -w "%{http_code}" -L "https://$URL") || true
+          echo "Public GET HTTP status: $STATUS"
           if [ "$STATUS" = "200" ]; then
-            echo "Smoke test passed (200)"
+            echo "Smoke test passed (public 200)"
             exit 0
           fi
 
-          if [ "$STATUS" = "401" ] && [ -n "${VERCEL_SSO_BYPASS_TOKEN-}" ]; then
-            echo "Received 401; retrying with SSO bypass token"
-            STATUS2=$(curl -s -o /tmp/smoke.html -w "%{http_code}" -L -H "Authorization: Bearer $VERCEL_SSO_BYPASS_TOKEN" "https://$URL")
-            echo "Retry HTTP status: $STATUS2"
+          if [ "$STATUS" = "401" ]; then
+            echo "Received 401 from public GET; project is likely SSO-protected"
+            if [ -z "${VERCEL_SSO_BYPASS_TOKEN-}" ]; then
+              echo "VERCEL_SSO_BYPASS_TOKEN is not set in repository secrets. For SSO-protected projects you must set this secret to verify the site." >&2
+              echo "If you intentionally want to keep SSO without a bypass token, set secret ALLOW_READYSTATE_FALLBACK=true to allow API READY to be treated as success." >&2
+              # Check API ready state to offer helpful diagnostics
+              READY_STATE=$(jq -r '.latestDeployments[0].readyState // .latestDeployments[0].status // .latestDeployments[0].state // empty' /tmp/project.json || true)
+              echo "Deployment ready state: $READY_STATE"
+              if [ "${ALLOW_READYSTATE_FALLBACK:-}" = "true" ] && [ "$READY_STATE" = "READY" ]; then
+                echo "ALLOW_READYSTATE_FALLBACK is set and deployment is READY. Accepting as success (but add VERCEL_SSO_BYPASS_TOKEN to allow direct smoke-testing)."
+                exit 0
+              fi
+              echo "Failing because SSO is detected but no bypass token is available." >&2
+              exit 1
+            fi
+
+            echo "Retrying GET with VERCEL_SSO_BYPASS_TOKEN"
+            STATUS2=$(curl -s -o /tmp/smoke.html -w "%{http_code}" -L -H "Authorization: Bearer $VERCEL_SSO_BYPASS_TOKEN" "https://$URL") || true
+            echo "SSO-bypass GET HTTP status: $STATUS2"
             if [ "$STATUS2" = "200" ]; then
               echo "Smoke test passed using SSO bypass token"
               exit 0
-            else
-              echo "Smoke test failed after SSO bypass; status: $STATUS2" >&2
-              echo "Checking deployment 'readyState' via Vercel API as a fallback"
-              READY_STATE=$(jq -r '.latestDeployments[0].readyState // .latestDeployments[0].status // .latestDeployments[0].state // empty' /tmp/project.json || true)
-              echo "Deployment ready state: $READY_STATE"
-              if [ "$READY_STATE" = "READY" ] || [ "$READY_STATE" = "ready" ] || [ "$READY_STATE" = "READY" ]; then
-                echo "Deployment is READY according to Vercel API, but site is SSO-protected (HTTP $STATUS2). Treating as success for CI purposes."
-                exit 0
-              fi
-              head -n 50 /tmp/smoke.html || true
-              exit 1
             fi
+
+            echo "SSO-bypass attempt did not return 200 (status: $STATUS2). Checking deployment ready state via Vercel API as a fallback"
+            READY_STATE=$(jq -r '.latestDeployments[0].readyState // .latestDeployments[0].status // .latestDeployments[0].state // empty' /tmp/project.json || true)
+            echo "Deployment ready state: $READY_STATE"
+            if [ "$READY_STATE" = "READY" ]; then
+              echo "Deployment is READY according to Vercel API, but SSO-bypass GET did not succeed (status: $STATUS2)." >&2
+              echo "Treating as success for CI, but please verify the VERCEL_SSO_BYPASS_TOKEN value if you expect to validate page contents directly."
+              exit 0
+            fi
+
+            echo "Smoke test failed after SSO-bypass attempt; status: $STATUS2" >&2
+            head -n 50 /tmp/smoke.html || true
+            exit 1
           fi
 
-          echo "Smoke test failed; status: $STATUS" >&2
+          echo "Smoke test failed; public GET returned status: $STATUS" >&2
           head -n 50 /tmp/smoke.html || true
           exit 1

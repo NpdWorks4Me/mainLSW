@@ -30,3 +30,8 @@ jobs:
           # Use try to avoid "Cannot index array with string" errors when response is an array
           echo 'Printing a compact per-project mapping (id, name, aliases)'
           cat /tmp/vercel_projects.json | jq -c 'try (.projects // .) catch . | (if type=="array" then .[] else . end) | {id: .id, name: .name, aliases: (.alias // [] | map(.alias // .))}' | sed -n '1,200p'
+
+      - name: NOTE - SSO protected projects
+        run: |
+          echo "If your project is SSO-protected, add a repository secret named VERCEL_SSO_BYPASS_TOKEN with an SSO bypass token to allow CI smoke tests to verify page content."
+          echo "To discover canonical project id (prj_...) rerun this workflow, then update VERCEL_PROJECT_ID in repo secrets to the id printed above."
