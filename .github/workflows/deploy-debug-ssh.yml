@@ -23,14 +23,26 @@ jobs:
           echo "Starting SSH debug (Host will be printed masked)"
           echo "HOST (masked): ${HOSTINGER_SSH_HOST}"
 
-      - name: Validate DNS resolution
+      - name: Validate DNS resolution / reachability
         run: |
           echo "Checking HOSTINGER_SSH_HOST format"
           if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^https?://"; then echo "HOST contains protocol (https://) please remove protocol and use host only"; exit 1; fi
           if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^.+/.+"; then echo "HOST contains path info; use host only (no path)"; exit 1; fi
           if [ -z "${HOSTINGER_SSH_HOST}" ]; then echo "HOSTINGER_SSH_HOST is missing"; exit 1; fi
           echo "Lookup host: ${HOSTINGER_SSH_HOST}"
-          nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed (NXDOMAIN or no A record)"; exit 1; }
+          # If the host looks like an IP address, check with TCP connect. If a hostname, check DNS resolution.
+          if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"; then
+            echo "Host appears to be an IP address; checking TCP connectivity to ${HOSTINGER_SSH_HOST}:${HOSTINGER_SSH_PORT}"
+            nc -vz -w 5 ${HOSTINGER_SSH_HOST} ${HOSTINGER_SSH_PORT} || { echo "TCP connection to ${HOSTINGER_SSH_HOST}:${HOSTINGER_SSH_PORT} failed"; exit 1; }
+          else
+            # Prefer dig to get A records, but fallback to nslookup if dig isn't available
+            if command -v dig >/dev/null 2>&1; then
+              dig +short "${HOSTINGER_SSH_HOST}" | sed -n '1p' >/tmp/_dig_addr || true
+              if [ ! -s /tmp/_dig_addr ]; then echo "dig returned no A record for ${HOSTINGER_SSH_HOST}"; nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed (NXDOMAIN or no A record)"; exit 1; }; fi
+            else
+              nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed (NXDOMAIN or no A record)"; exit 1; }
+            fi
+          fi
 
       - name: Validate SSH key parse
         env:

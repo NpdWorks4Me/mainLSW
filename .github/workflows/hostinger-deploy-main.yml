@@ -121,7 +121,18 @@ jobs:
           if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^https?://"; then echo "HOST contains protocol (https://) please remove protocol and use host only"; exit 1; fi
           if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^.+/.+"; then echo "HOST contains path info; use host only (no path)"; exit 1; fi
           if [ -z "${HOSTINGER_SSH_HOST}" ]; then echo "HOSTINGER_SSH_HOST is missing"; exit 1; fi
-          nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed (NXDOMAIN) - please verify the host is correct and publicly resolvable"; exit 1; }
+          # If host is IP address: check TCP connect. Otherwise check DNS resolution.
+          if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"; then
+            echo "HOST is IP, validating TCP connect to ${HOSTINGER_SSH_HOST}:${HOSTINGER_SSH_PORT}"
+            nc -vz -w 5 "${HOSTINGER_SSH_HOST}" "${HOSTINGER_SSH_PORT}" || { echo "TCP connection failed"; exit 1; }
+          else
+            if command -v dig >/dev/null 2>&1; then
+              dig +short "${HOSTINGER_SSH_HOST}" | sed -n '1p' >/tmp/_dig_addr || true
+              if [ ! -s /tmp/_dig_addr ]; then echo "dig returned no A record for ${HOSTINGER_SSH_HOST}"; nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed (NXDOMAIN) - please verify the host is correct and publicly resolvable"; exit 1; }; fi
+            else
+              nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed (NXDOMAIN) - please verify the host is correct and publicly resolvable"; exit 1; }
+            fi
+          fi
           echo "Validating PRIVATE KEY format"
           if [ -z "${HOSTINGER_SSH_PRIVATE_KEY}" ]; then echo "HOSTINGER_SSH_PRIVATE_KEY missing"; exit 1; fi
           printf "%s\n" "${HOSTINGER_SSH_PRIVATE_KEY}" > /tmp/hostinger_key
