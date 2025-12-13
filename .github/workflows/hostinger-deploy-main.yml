@@ -110,6 +110,25 @@ jobs:
       - name: Install lftp (for FTP fallback)
         run: sudo apt-get update && sudo apt-get install -y lftp
 
+      - name: Pre-deploy: validate SSH host & key
+        if: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY != '' }}
+        env:
+          HOSTINGER_SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          HOSTINGER_SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          HOSTINGER_SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+        run: |
+          echo "Validating HOSTINGER_SSH_HOST format and DNS"
+          if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^https?://"; then echo "HOST contains protocol (https://) please remove protocol and use host only"; exit 1; fi
+          if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^.+/.+"; then echo "HOST contains path info; use host only (no path)"; exit 1; fi
+          if [ -z "${HOSTINGER_SSH_HOST}" ]; then echo "HOSTINGER_SSH_HOST is missing"; exit 1; fi
+          nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed (NXDOMAIN) - please verify the host is correct and publicly resolvable"; exit 1; }
+          echo "Validating PRIVATE KEY format"
+          if [ -z "${HOSTINGER_SSH_PRIVATE_KEY}" ]; then echo "HOSTINGER_SSH_PRIVATE_KEY missing"; exit 1; fi
+          printf "%s\n" "${HOSTINGER_SSH_PRIVATE_KEY}" > /tmp/hostinger_key
+          chmod 600 /tmp/hostinger_key
+          ssh-keygen -y -f /tmp/hostinger_key >/tmp/_hostinger_pub || { echo "ssh-keygen parse failed (invalid private key)"; exit 1; }
+          echo "Pre-deploy SSH host & key validation succeeded"
+
       - name: Deploy main via SFTP
         if: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY != '' }}
         uses: appleboy/scp-action@master

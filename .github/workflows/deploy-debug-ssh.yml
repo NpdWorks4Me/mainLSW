@@ -25,8 +25,12 @@ jobs:
 
       - name: Validate DNS resolution
         run: |
+          echo "Checking HOSTINGER_SSH_HOST format"
+          if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^https?://"; then echo "HOST contains protocol (https://) please remove protocol and use host only"; exit 1; fi
+          if printf "%s" "${HOSTINGER_SSH_HOST}" | grep -qE "^.+/.+"; then echo "HOST contains path info; use host only (no path)"; exit 1; fi
           if [ -z "${HOSTINGER_SSH_HOST}" ]; then echo "HOSTINGER_SSH_HOST is missing"; exit 1; fi
-          nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed"; exit 1; }
+          echo "Lookup host: ${HOSTINGER_SSH_HOST}"
+          nslookup "${HOSTINGER_SSH_HOST}" || { echo "DNS lookup failed (NXDOMAIN or no A record)"; exit 1; }
 
       - name: Validate SSH key parse
         env:
