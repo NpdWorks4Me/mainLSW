@@ -48,6 +48,17 @@ jobs:
       - name: Print vercel version (debug)
         run: npx --yes vercel --version || true
 
+      - name: Ensure static vercel.json in dist
+        run: |
+          echo 'Creating a vercel.json in dist to force static deployment'
+          cat > dist/vercel.json <<'JSON'
+          {
+            "version": 2,
+            "builds": [{ "src": "index.html", "use": "@vercel/static" }],
+            "routes": [ { "src": "/(.*)", "dest": "/index.html" } ]
+          }
+          JSON
+
       - name: Deploy to Vercel (CLI)
         run: |
           echo "Deploying dist/ to Vercel using VERCEL_TOKEN"
