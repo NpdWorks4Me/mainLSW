@@ -116,18 +116,33 @@ jobs:
           echo "Raw project info saved to /tmp/project.json (first 200 chars):"
           head -c 200 /tmp/project.json || true
 
-          # Prefer aliases (custom domains) when available, then fallback to latest deployment url
-          URL=$(jq -r '(.alias // [] | select(length>0) | .[0]) // .latestDeployments[0].url // empty' /tmp/project.json)
+          # Extract a usable host/alias robustly from project metadata.
+          # Handles shapes where `alias` may be ["host"] or [{"deployment": {"alias": ["host"]}}]
+          URL=$(jq -r '
+            ( .alias[]? as $a |
+                (if ($a|type) == "string" then $a
+                 elif ($a.deployment? // false) then ($a.deployment.alias[]?)
+                 elif ($a.alias? // false) then ($a.alias[]?)
+                 else empty end)
+            ) // .latestDeployments[0].url // (.latestDeployments[0].alias[]? // empty) | select(.)' /tmp/project.json 2>/dev/null | head -n1 || true)
+
           if [ -z "$URL" ]; then
             echo "Could not determine deployment URL from project metadata" >&2
-            cat /tmp/project.json
+            echo "Project JSON (first 400 chars):" && head -c 400 /tmp/project.json || true
             exit 1
           fi
-          echo "Detected deployment host: $URL"
 
-          echo "Attempting public GET https://$URL"
-          STATUS=$(curl -s -o /tmp/smoke.html -w "%{http_code}" -L "https://$URL") || true
-          echo "Public GET HTTP status: $STATUS"
+          # Normalize host (strip any https:// prefix if present)
+          HOST=$(echo "$URL" | sed -E 's|^https?://||')
+          echo "Detected deployment host: $HOST"
+
+          echo "Attempting public GET https://$HOST"
+          STATUS=$(curl -s -o /tmp/smoke.html -w "%{http_code}" -L "https://$HOST" || true)
+          if [ -z "$STATUS" ]; then
+            echo "Public GET produced no status code; possible network error or invalid host: $HOST" >&2
+            STATUS=""
+          fi
+          echo "Public GET HTTP status: ${STATUS:-<none>}"
           if [ "$STATUS" = "200" ]; then
             echo "Smoke test passed (public 200)"
             exit 0
