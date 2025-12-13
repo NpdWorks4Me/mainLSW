@@ -59,6 +59,16 @@ jobs:
           }
           JSON
 
+      - name: Verify Vercel project id exists
+        if: env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+        run: |
+          echo "Checking project id $VERCEL_PROJECT_ID in org $VERCEL_ORG_ID"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v1/projects/$VERCEL_PROJECT_ID?teamId=$VERCEL_ORG_ID")
+          echo "Vercel API project lookup returned HTTP $HTTP_STATUS"
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "Project not found or token lacks access for $VERCEL_PROJECT_ID in org $VERCEL_ORG_ID" && exit 1
+          fi
+
       - name: Deploy to Vercel (Action)
         if: env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
         uses: amondnet/vercel-action@v20
