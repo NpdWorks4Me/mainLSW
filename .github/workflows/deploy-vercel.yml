@@ -51,4 +51,10 @@ jobs:
       - name: Deploy to Vercel (CLI)
         run: |
           echo "Deploying dist/ to Vercel using VERCEL_TOKEN"
-          npx --yes vercel --cwd dist --token "$VERCEL_TOKEN" --prod --confirm
+          # If a project id is set in secrets but org id is not set, unset it so the CLI
+          # will attempt to auto-detect the project instead of erroring out.
+          if [ -n "$VERCEL_PROJECT_ID" ] && [ -z "$VERCEL_ORG_ID" ]; then
+            echo "VERCEL_PROJECT_ID present and VERCEL_ORG_ID missing; unsetting VERCEL_PROJECT_ID so CLI auto-detects project"
+            unset VERCEL_PROJECT_ID
+          fi
+          npx --yes vercel --cwd dist --token "$VERCEL_TOKEN" --prod --yes
