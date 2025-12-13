@@ -21,4 +21,6 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
           echo 'Fetching projects for VERCEL_ORG_ID=' "$VERCEL_ORG_ID"
-          curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v1/projects?teamId=$VERCEL_ORG_ID" | jq '.projects[] | {id: .id, name: .name, git: .gitRepository}'
+          curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v1/projects?teamId=$VERCEL_ORG_ID" -o /tmp/vercel_projects.json
+          echo 'Raw response saved to /tmp/vercel_projects.json'
+          cat /tmp/vercel_projects.json | jq '(.projects // .) | .[] | {id: .id, name: .name, git: .gitRepository}'
