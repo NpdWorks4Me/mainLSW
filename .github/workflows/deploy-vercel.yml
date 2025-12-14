@@ -133,6 +133,23 @@ jobs:
           # Attempt a prebuilt deploy directly and fail loudly if it cannot succeed so
           # we don't silently fall back to remote builds which have produced
           # mismatched/absent assets historically.
+          echo "Pre-deploy debug: listing 'dist' and checking config"
+          echo "--- ls -la dist (first 200 lines) ---"
+          ls -la dist | sed -n '1,200p' || true
+          echo "--- du -sh dist ---"
+          du -sh dist || true
+          echo "--- cat dist/vercel.json ---"
+          cat dist/vercel.json || true
+          echo "--- git submodule status (if any) ---"
+          git submodule status --recursive || echo "(no submodules or failed to fetch)"
+          echo "--- Node & npm versions ---"
+          node --version || true
+          npm --version || true
+          echo "--- vercel CLI version ---"
+          npx --yes vercel --version || true
+          echo "--- Environment VERCEL_* variables (masked values removed) ---"
+          env | grep -E '^VERCEL_' || true
+
           echo "Attempting prebuilt deploy: vercel deploy --prebuilt --cwd dist"
           # Attempt prebuilt deploy and capture logs for diagnostics. Don't abort
           # the job here—upload diagnostic logs in a later step and then fail the
