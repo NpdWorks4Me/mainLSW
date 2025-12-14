@@ -8,6 +8,9 @@ on:
       site_url:
         description: 'Optional preview URL to verify after deploy (overrides secret HOSTINGER_SITE_URL)'
         required: false
+      force_ftp:
+        description: 'When true, skip SSH and force FTP deploy (useful for testing FTP fallback)'
+        required: false
 
 
 jobs:
@@ -16,6 +19,7 @@ jobs:
     env:
       HOSTINGER_TARGET_DIR_MAIN: ${{ secrets.HOSTINGER_TARGET_DIR_MAIN || 'public_html' }}
       HOSTINGER_SITE_URL: ${{ github.event.inputs.site_url || secrets.HOSTINGER_SITE_URL || '' }}
+      FORCE_FTP: ${{ github.event.inputs.force_ftp || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,6 +44,12 @@ jobs:
           echo "Preparing deploy method..."
           USE_SSH=false
           USE_FTP=false
+          # Allow force override to skip SSH and use FTP
+          if [ "${FORCE_FTP:-false}" = "true" ]; then
+            echo "FORCE_FTP is true — forcing FTP deploy and skipping SSH"
+            USE_SSH=false
+            USE_FTP=true
+          fi
           # Detect SSH secrets presence
           if [ -n "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" ] && [ -n "${{ secrets.HOSTINGER_SSH_HOST }}" ] && [ -n "${{ secrets.HOSTINGER_SSH_USERNAME }}" ]; then
             USE_SSH=true
@@ -73,20 +83,38 @@ jobs:
 
       - name: Deploy via SSH (if HOSTINGER_SSH_PRIVATE_KEY is provided)
         if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+        continue-on-error: true
+        run: |
+          echo "Preparing SSH private key file for rsync"
+          set -euo pipefail
+          printf "%s" "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" > /tmp/hostinger_key
+          chmod 600 /tmp/hostinger_key || true
+          # Attempt to convert OpenSSH new-format keys to PEM so libcrypto can read them
+          if ssh-keygen -p -m PEM -N "" -f /tmp/hostinger_key >/dev/null 2>&1; then
+            echo "Converted key to PEM format"
+          else
+            echo "Key conversion to PEM failed or was unnecessary; continuing with original key format"
+          fi
 
-      - name: Rsync to Hostinger via SSH
+      - name: Test SSH connectivity (diagnostic)
         if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        continue-on-error: true
+        run: |
+          echo "Testing SSH connectivity to ${HOSTINGER_SSH_HOST} (user: ${HOSTINGER_SSH_USERNAME})"
+          timeout 10 ssh -i /tmp/hostinger_key -o BatchMode=yes -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22} ${HOSTINGER_SSH_USERNAME}@${HOSTINGER_SSH_HOST} 'echo SSH_OK' || true
+
+      - name: Rsync to Hostinger via SSH (dry-run)
+        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        continue-on-error: true
         run: |
           echo "Performing dry-run rsync to detect connectivity (no changes will be made)"
-          rsync -avz --dry-run -e "ssh -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}" || true
+          rsync -avz --dry-run -e "ssh -i /tmp/hostinger_key -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}" || true
       - name: Rsync to Hostinger via SSH (live)
         if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        continue-on-error: true
         run: |
           echo "Uploading dist/ -> ${HOSTINGER_TARGET_DIR_MAIN} on ${HOSTINGER_SSH_HOST}"
-          rsync -avz --delete --omit-dir-times --no-perms -e "ssh -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}"
+          rsync -avz --delete --omit-dir-times --no-perms -e "ssh -i /tmp/hostinger_key -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}"
 
       - name: Deploy via FTP (fallback)
         if: ${{ steps.prepare.outputs.use_ftp == 'true' }}
