@@ -32,6 +32,20 @@ jobs:
       - name: Verify dist assets
         run: ./scripts/verify-dist-assets.sh
 
+      - name: Install lftp (for FTP diagnostics)
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Test FTP connectivity (diagnostic)
+        env:
+          FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+          FTP_USER: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.HOSTINGER_FTP_PORT || 21 }}
+        run: |
+          if [ -z "$FTP_HOST" ]; then echo "No FTP host provided; skipping connectivity test"; exit 1; fi
+          echo "Testing FTP connectivity to $FTP_HOST:$FTP_PORT (will not modify remote)"
+          lftp -u "$FTP_USER","$FTP_PASS" -p $FTP_PORT $FTP_HOST -e "ls || true; quit"
+
       - name: Deploy via FTP
         if: ${{ secrets.HOSTINGER_FTP_HOST != '' && secrets.HOSTINGER_FTP_USERNAME != '' && secrets.HOSTINGER_FTP_PASSWORD != '' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.2.0
