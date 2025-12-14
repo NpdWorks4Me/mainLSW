@@ -48,9 +48,11 @@ jobs:
           echo "Verifying site at ${HOSTINGER_SITE_URL}"
           ./scripts/verify-hosting-deploy.sh "${HOSTINGER_SITE_URL}"
 
-      - name: Upload dist listing artifact
+      - name: Generate dist listing (for diagnostics)
         run: |
           ls -la dist | sed -n '1,200p' > dist-listing.txt || true
+
+      - name: Upload dist listing artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-listing
