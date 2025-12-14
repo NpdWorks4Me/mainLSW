@@ -130,13 +130,24 @@ jobs:
             unset VERCEL_PROJECT_ID
           fi
           # Prefer a prebuilt deployment which uploads static files and skips a remote build.
-          # This avoids Vercel trying to run a Next.js build when the project settings expect Next.
-          if npx --yes vercel deploy --help | grep -q -- '--prebuilt'; then
-            echo "Using vercel deploy --prebuilt to upload static assets and skip remote build"
-            npx --yes vercel deploy --prebuilt --cwd dist --token "$VERCEL_TOKEN" --prod --yes
+          # Attempt a prebuilt deploy directly and fail loudly if it cannot succeed so
+          # we don't silently fall back to remote builds which have produced
+          # mismatched/absent assets historically.
+          echo "Attempting prebuilt deploy: vercel deploy --prebuilt --cwd dist"
+          if npx --yes vercel deploy --prebuilt --cwd dist --token "$VERCEL_TOKEN" --prod --yes > /tmp/vercel_deploy_prebuilt.log 2>&1; then
+            echo "Prebuilt deploy succeeded"
+            sed -n '1,200p' /tmp/vercel_deploy_prebuilt.log || true
           else
-            echo "VERCEL CLI does not support --prebuilt on this version; falling back to normal deploy"
-            npx --yes vercel --cwd dist --token "$VERCEL_TOKEN" --prod --yes
+            echo "Prebuilt deploy FAILED. Deployment log (first 200 lines):" >&2
+            sed -n '1,200p' /tmp/vercel_deploy_prebuilt.log || true
+            echo "Failing the job to avoid a remote build which may publish mismatched assets." >&2
+            echo "If you intentionally want to allow remote build fallbacks, set secret ALLOW_FALLBACK_TO_REMOTE=true" >&2
+            if [ "${ALLOW_FALLBACK_TO_REMOTE:-}" = "true" ]; then
+              echo "ALLOW_FALLBACK_TO_REMOTE is set; falling back to standard deploy (remote build)."
+              npx --yes vercel --cwd dist --token "$VERCEL_TOKEN" --prod --yes
+            else
+              exit 1
+            fi
           fi
 
       - name: Post-deploy smoke test (handles SSO bypass)
@@ -257,27 +268,36 @@ jobs:
           echo "Downloading index.html from https://$HOST"
           curl -s -L "https://$HOST" -o /tmp/smoke.html || true
 
+          # Normalize the downloaded HTML to a single line to robustly extract
+          # attributes that may be split across lines in pretty-printed HTML.
+          tr '\n' ' ' < /tmp/smoke.html | sed -E 's/ +/ /g' > /tmp/smoke_one_line.html || true
+
           # Extract asset URLs (scripts/styles/hrefs and common top-level files)
-          ASSETS=$(grep -Eo 'src="(/[^"]+)"|href="(/[^"]+)"' /tmp/smoke.html | sed -E 's/.*("|\')(\/[^"'\']+)("|\')/\2/' | grep -E '^/(assets|sw.js|favicon.svg|manifest.json|sitemap.xml|icons/)' || true)
+          ASSETS=$(grep -oE '(src|href)="/[^"']+"' /tmp/smoke_one_line.html | sed -E 's/^(src|href)="(\/[^"']+)"$/\2/' | grep -E '^/(assets|sw.js|favicon.svg|manifest.json|sitemap.xml|icons/)' | sort -u || true)
 
           if [ -z "$ASSETS" ]; then
-            echo "No assets found in index.html; aborting asset verification" >&2
-            head -n 50 /tmp/smoke.html || true
-            exit 1
+            echo "Warning: could not find assets in index.html (possibly wrapped or unexpected markup)." >&2
+            echo "Proceeding to fetch deployment file list for diagnostics. Outputting a snippet of the fetched index:" >&2
+            head -n 200 /tmp/smoke.html || true
           fi
 
           MISSING=0
-          echo "Checking assets from index.html (unique):"
-          echo "$ASSETS" | sort -u | while read -r path; do
-            echo " - Checking https://$HOST$path"
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L "https://$HOST$path" || true)
-            if [ "$STATUS" != "200" ]; then
-              echo "   -> MISSING or non-200 status: $STATUS" >&2
-              MISSING=1
-            else
-              echo "   -> OK"
-            fi
-          done
+          if [ -n "$ASSETS" ]; then
+            echo "Checking assets from index.html (unique):"
+            echo "$ASSETS" | while read -r path; do
+              echo " - Checking https://$HOST$path"
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L "https://$HOST$path" || true)
+              if [ "$STATUS" != "200" ]; then
+                echo "   -> MISSING or non-200 status: $STATUS" >&2
+                MISSING=1
+              else
+                echo "   -> OK"
+              fi
+            done
+          else
+            echo "Skipped direct asset checks since no assets were discovered in index.html." >&2
+            MISSING=1
+          fi
 
           # Diagnostic: fetch the deployment's file list via Vercel API and
           # print any files under /assets so we can see whether the uploaded
@@ -295,5 +315,51 @@ jobs:
           if [ "$MISSING" -ne 0 ]; then
             echo "One or more assets referenced from index.html are not present on the deployment. This likely explains a blank/JS-less page."
             echo "Tips: prefer a prebuilt deploy (vercel deploy --prebuilt --cwd dist) so the exact built assets are uploaded, or ensure the remote build produces and publishes all assets."
+            exit 1
+          fi
+
+      - name: Upload diagnostic files (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vercel-deploy-diagnostics
+          path: |
+            /tmp/vercel_deploy_prebuilt.log
+            /tmp/project.json
+            /tmp/smoke.html
+            /tmp/deploy_files.json
+
+      - name: Playwright homepage smoke test (optional)
+        if: always()
+        run: |
+          echo "Running Playwright homepage smoke test against https://$HOST"
+          # Ensure Playwright is installed; npm ci is already run at the start of this job
+          npx playwright install --with-deps || true
+          export PLAYWRIGHT_SKIP_ADMIN_WEB_SERVER=true
+          export BASE_URL="https://$HOST"
+          # Run only the homepage smoke test to keep it fast and focused
+          if npx playwright test tests/homepage.spec.js -g "Homepage smoke tests" --workers=1 --reporter=list; then
+            echo "Playwright smoke test passed"
+          else
+            echo "Playwright smoke test failed; capturing a quick page snapshot for debugging"
+            npx playwright show-report || true
+            exit 1
+          fi
+
+          # If asset verification passed, run a lightweight Playwright smoke test
+          # against the deployed host to ensure JS/CSS are being applied and the
+          # page renders expected UI pieces. This is optional but provides an
+          # additional real browser check beyond simple asset 200s.
+          echo "Running Playwright homepage smoke test against https://$HOST"
+          # Ensure Playwright is installed; npm ci is already run at the start of this job
+          npx playwright install --with-deps || true
+          export PLAYWRIGHT_SKIP_ADMIN_WEB_SERVER=true
+          export BASE_URL="https://$HOST"
+          # Run only the homepage smoke test to keep it fast and focused
+          if npx playwright test tests/homepage.spec.js -g "Homepage smoke tests" --workers=1 --reporter=list; then
+            echo "Playwright smoke test passed"
+          else
+            echo "Playwright smoke test failed; capturing a quick page snapshot for debugging"
+            npx playwright show-report || true
             exit 1
           fi
