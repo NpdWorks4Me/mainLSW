@@ -1,21 +1,23 @@
 /* eslint-disable no-unused-vars */
-import * as Phaser from 'phaser';
+// SnakeScene is exported as a factory that receives the Phaser module at runtime.
+// This avoids bundling Phaser into non-game chunks and enables dynamic loading.
 import useGameStore from '../store';
 
-// Simple Phaser-based Snake Scene with events
-export default class SnakeScene extends Phaser.Scene {
-  constructor() {
-    super({ key: 'SnakeScene' });
-    this.boardSize = 20;
-    this.cellSize = 24; // will be recalculated on resize
-    this.snake = [];
-    this.food = { x: 0, y: 0 };
-    this.direction = { x: 0, y: -1 };
-    this.speedMs = 150;
-    this.score = 0;
-    this.timer = null;
-    this.started = false;
-  }
+// Export a factory: call createSnakeScene(Phaser) to get a Scene subclass.
+export default function createSnakeScene(Phaser) {
+  return class SnakeScene extends Phaser.Scene {
+    constructor() {
+      super({ key: 'SnakeScene' });
+      this.boardSize = 20;
+      this.cellSize = 24; // will be recalculated on resize
+      this.snake = [];
+      this.food = { x: 0, y: 0 };
+      this.direction = { x: 0, y: -1 };
+      this.speedMs = 150;
+      this.score = 0;
+      this.timer = null;
+      this.started = false;
+    }
 
   init() {
     this.game.events.on('resize', this.resize, this);
@@ -109,16 +111,16 @@ export default class SnakeScene extends Phaser.Scene {
     this.resize({ width: this.sys.canvas.width, height: this.sys.canvas.height });
   }
 
-  generateFood() {
-    const { snake } = this;
-    const maxAttempts = 500;
-    let attempt = 0;
-    while (attempt++ < maxAttempts) {
-      const candidate = { x: Phaser.Math.Between(0, this.boardSize - 1), y: Phaser.Math.Between(0, this.boardSize - 1) };
-      if (!snake.some(s => s.x === candidate.x && s.y === candidate.y)) return candidate;
+    generateFood() {
+      const { snake } = this;
+      const maxAttempts = 500;
+      let attempt = 0;
+      while (attempt++ < maxAttempts) {
+        const candidate = { x: Phaser.Math.Between(0, this.boardSize - 1), y: Phaser.Math.Between(0, this.boardSize - 1) };
+        if (!snake.some(s => s.x === candidate.x && s.y === candidate.y)) return candidate;
+      }
+      return { x: 0, y: 0 };
     }
-    return { x: 0, y: 0 };
-  }
 
   tick() {
     try { /* tick start */ } catch (e) {}
@@ -243,31 +245,32 @@ export default class SnakeScene extends Phaser.Scene {
     } catch (err) { /* ignore */ }
   }
 
-  resize(gameSize) {
-    const width = gameSize.width; const height = gameSize.height;
-    // Decide based on displayed (CSS) size to match user-visible grid
-    const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) ? Math.min(window.devicePixelRatio, 2) : 1;
-    const cssWidth = (this.sys && this.sys.canvas && this.sys.canvas.clientWidth) ? this.sys.canvas.clientWidth : Math.round(width / dpr);
-    const cssHeight = (this.sys && this.sys.canvas && this.sys.canvas.clientHeight) ? this.sys.canvas.clientHeight : Math.round(height / dpr);
-    const cellSz = Math.floor(Math.min(cssWidth, cssHeight) / this.boardSize);
-    // Keep cellSize in internal canvas pixels (CSS size * DPR)
-    this.cellSize = Math.max(8, Math.round(cellSz * dpr));
-    // Re-draw immediately so the grid fills the new area
-    this.draw();
-  }
+    resize(gameSize) {
+      const width = gameSize.width; const height = gameSize.height;
+      // Decide based on displayed (CSS) size to match user-visible grid
+      const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) ? Math.min(window.devicePixelRatio, 2) : 1;
+      const cssWidth = (this.sys && this.sys.canvas && this.sys.canvas.clientWidth) ? this.sys.canvas.clientWidth : Math.round(width / dpr);
+      const cssHeight = (this.sys && this.sys.canvas && this.sys.canvas.clientHeight) ? this.sys.canvas.clientHeight : Math.round(height / dpr);
+      const cellSz = Math.floor(Math.min(cssWidth, cssHeight) / this.boardSize);
+      // Keep cellSize in internal canvas pixels (CSS size * DPR)
+      this.cellSize = Math.max(8, Math.round(cellSz * dpr));
+      // Re-draw immediately so the grid fills the new area
+      this.draw();
+    }
 
   update() {
     // visual update is left to Phaser's graphics or to React; events fired on tick
   }
 
   // Clean up DOM listeners on scene shutdown
-  shutdown() {
-    try {
-      const canvas = this.sys && this.sys.canvas;
-  if (canvas && this.__domPointerDown) canvas.removeEventListener('pointerdown', this.__domPointerDown);
-  if (canvas && this.__domPointerMove) canvas.removeEventListener('pointermove', this.__domPointerMove);
-  if (canvas && this.__domMouseMove) canvas.removeEventListener('mousemove', this.__domMouseMove);
-  if (canvas && this.__domMouseUp) canvas.removeEventListener('mouseup', this.__domMouseUp);
-    } catch (err) { /* ignore */ }
-  }
+    shutdown() {
+      try {
+        const canvas = this.sys && this.sys.canvas;
+        if (canvas && this.__domPointerDown) canvas.removeEventListener('pointerdown', this.__domPointerDown);
+        if (canvas && this.__domPointerMove) canvas.removeEventListener('pointermove', this.__domPointerMove);
+        if (canvas && this.__domMouseMove) canvas.removeEventListener('mousemove', this.__domMouseMove);
+        if (canvas && this.__domMouseUp) canvas.removeEventListener('mouseup', this.__domMouseUp);
+      } catch (err) { /* ignore */ }
+    }
+  };
 }

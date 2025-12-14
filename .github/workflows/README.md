@@ -35,7 +35,8 @@ npm ci
 npx playwright install --with-deps
 
 # Start a preview server (or serve `dist/`)
-npx http-server dist -p 3000 -c-1 &
+# Use an SPA-capable server so client-side routes (e.g. /store) fall back to index.html
+npx serve -s dist -l 3000 &
 
 # Run the specific test
 BASE_URL=http://localhost:3000 PLAYWRIGHT_SKIP_ADMIN_WEB_SERVER=true npm run test:e2e -- tests/homepage.spec.js -g "Homepage smoke tests"

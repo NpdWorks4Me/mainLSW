@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import * as Phaser from 'phaser';
-import SnakeScene from '../lib/phaser/SnakeScene';
+// Phaser and SnakeScene are loaded dynamically to avoid bundling Phaser into the main bundle
 import useGameStore from '../lib/store';
 
 const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
@@ -9,7 +8,29 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
 
   useEffect(() => {
     let mounted = true;
-    const scene = new SnakeScene();
+    let scene = null;
+    // Dynamically import Phaser and the scene factory on the client only
+    const loadPhaser = async () => {
+      try {
+        const [sceneMod, phaserMod] = await Promise.all([
+          import('../lib/phaser/SnakeScene'),
+          import('phaser')
+        ]);
+        const createSnakeScene = sceneMod && sceneMod.default ? sceneMod.default : null;
+        const PhaserLib = phaserMod && phaserMod.default ? phaserMod.default : phaserMod;
+        if (!createSnakeScene || !PhaserLib) {
+          console.error('[PhaserCanvas] Failed to dynamically import Phaser or SnakeScene');
+          return;
+        }
+        scene = createSnakeScene(PhaserLib);
+        // After loading, attempt to create the game
+        if (mounted) createIfReady();
+      } catch (err) {
+        console.error('[PhaserCanvas] dynamic import failed', err);
+      }
+    };
+    // Kick off dynamic import
+    loadPhaser();
 
     const getSize = () => {
       const rect = containerRef.current?.getBoundingClientRect() || { width: 600, height: 600 };
@@ -40,8 +61,9 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
         const rw = Math.round(Math.max(1, w) * dpr);
         const rh = Math.round(Math.max(1, h) * dpr);
         if (rw <= 1 || rh <= 1) return false;
-        if (!gameRef.current) {
-          gameRef.current = new Phaser.Game(createConfig(rw, rh));
+        if (!gameRef.current && scene) {
+          gameRef.current = new (awaitablePhaserGameCreator(createConfig))(scene);
+          // In case Phaser wasn't loaded at file top-level, we construct using the scene class
           try { if (gameRef.current && gameRef.current.canvas) gameRef.current.canvas.setAttribute('data-testid', 'phaser-canvas'); } catch (e) {}
           console.debug('[PhaserCanvas] Game created with', rw, rh);
         }
@@ -51,6 +73,22 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
         return false;
       }
     };
+
+    // Helper to create Phaser.Game after dynamic import was done. We can't reference the Phaser
+    // constructor until it's loaded; build an adapter that will create the Game when Phaser is available.
+    function awaitablePhaserGameCreator(config) {
+      // If Phaser is loaded, create Game immediately
+      try {
+        // eslint-disable-next-line global-require
+        const PhaserLib = require('phaser');
+        return function(SceneClass) {
+          return new PhaserLib.Game({ ...config, scene: [SceneClass] });
+        }(scene);
+      } catch (err) {
+        // Fallback: try to import Phaser synchronously isn't possible; throw to be caught above
+        throw err;
+      }
+    }
 
     if (mounted) {
       // If the container already has a size, create immediately
