@@ -134,21 +134,19 @@ jobs:
           # we don't silently fall back to remote builds which have produced
           # mismatched/absent assets historically.
           echo "Attempting prebuilt deploy: vercel deploy --prebuilt --cwd dist"
+          # Attempt prebuilt deploy and capture logs for diagnostics. Don't abort
+          # the job here—upload diagnostic logs in a later step and then fail the
+          # workflow explicitly so diagnostics are always available.
+          set -o pipefail
           if npx --yes vercel deploy --prebuilt --cwd dist --token "$VERCEL_TOKEN" --prod --yes > /tmp/vercel_deploy_prebuilt.log 2>&1; then
             echo "Prebuilt deploy succeeded"
             sed -n '1,200p' /tmp/vercel_deploy_prebuilt.log || true
           else
             echo "Prebuilt deploy FAILED. Deployment log (first 200 lines):" >&2
             sed -n '1,200p' /tmp/vercel_deploy_prebuilt.log || true
-            echo "Failing the job to avoid a remote build which may publish mismatched assets." >&2
-            echo "If you intentionally want to allow remote build fallbacks, set secret ALLOW_FALLBACK_TO_REMOTE=true" >&2
-            if [ "${ALLOW_FALLBACK_TO_REMOTE:-}" = "true" ]; then
-              echo "ALLOW_FALLBACK_TO_REMOTE is set; falling back to standard deploy (remote build)."
-              npx --yes vercel --cwd dist --token "$VERCEL_TOKEN" --prod --yes
-            else
-              exit 1
-            fi
+            echo "Prebuilt deploy failed — continuing so we can upload diagnostics (artifacts)." >&2
           fi
+        continue-on-error: true
 
       - name: Post-deploy smoke test (handles SSO bypass)
         if: env.VERCEL_PROJECT_ID != ''
@@ -343,6 +341,17 @@ jobs:
           else
             echo "Playwright smoke test failed; capturing a quick page snapshot for debugging"
             npx playwright show-report || true
+            exit 1
+          fi
+
+      - name: Enforce prebuilt-deploy success (fail if prebuilt did not run)
+        if: always()
+        run: |
+          if grep -q "Prebuilt deploy succeeded" /tmp/vercel_deploy_prebuilt.log 2>/dev/null; then
+            echo "Prebuilt deploy succeeded"
+            exit 0
+          else
+            echo "Prebuilt deploy did not succeed — failing the job to avoid a remote build fallback. See vercel-deploy-diagnostics artifact for details." >&2
             exit 1
           fi
 
