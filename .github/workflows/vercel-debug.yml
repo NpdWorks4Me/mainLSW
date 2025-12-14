@@ -1,7 +1,6 @@
 name: Vercel Debug
 
-on:
-  workflow_dispatch:
+on: []
 
 jobs:
   list-projects:
