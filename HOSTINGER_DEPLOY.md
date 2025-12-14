@@ -27,6 +27,7 @@ Notes and examples
 GitHub Actions and secrets
 --------------------------
 - If you set up the `.github/workflows/hostinger-deploy.yml` workflow, add the appropriate secrets to your GitHub repository under Settings → Secrets → Actions.
+ - Note: automated secret checks and deploy diagnostics were updated (Dec 13, 2025). If you trigger the "Build, Test, and Deploy to Hostinger (main only)" workflow it will upload a `secrets-report` artifact showing which HOSTINGER_* and SUPABASE_* secrets are present.
  - This repo includes a ready-to-use GitHub Action at `.github/workflows/hostinger-deploy-main.yml` that builds, tests, and deploys the main `dist/` site to Hostinger (it will use SSH/SFTP when `HOSTINGER_SSH_PRIVATE_KEY` is present, otherwise it falls back to FTP). Add the secrets listed below to enable automated deploys from CI.
 
 Triggering a manual deploy from the command line
