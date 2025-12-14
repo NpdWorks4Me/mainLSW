@@ -9,6 +9,24 @@ Quick summary
 - CI prefers to deploy with the Vercel Action using the canonical Vercel project id (the `prj_...` id).
 - The workflow writes a `dist/vercel.json` during build to force a static deployment (so Vercel will not attempt a remote Next.js build).
 - The smoke-test verifies the deployed site by doing a public GET. If the project is SSO-protected, CI will attempt a GET using the SSO bypass token (secret `VERCEL_SSO_BYPASS_TOKEN`).
+
+Temporary status: Vercel workflows paused
+-----------------------------------------
+
+All Vercel-related workflows have been temporarily disabled (archived to `.github/disabled-workflows/`) while we diagnose the issue where index.html references hashed assets that are not present on deployed artifacts. This runbook remains for reference if you later want to re-enable or reconfigure Vercel deploys.
+ - After the smoke-test the workflow now also verifies that all assets referenced from the deployed `index.html` (scripts, styles, service worker, favicon, manifest, etc.) are reachable (HTTP 200). If any referenced asset returns non-200 the workflow will fail. This guards against deployments where `index.html` is present but the built assets were not uploaded or are missing on the deployment (the most common cause of a blank page).
+
+Recommendations:
+- Prefer uploading a prebuilt deployment (CI should use `vercel deploy --prebuilt --cwd dist`) so the exact build outputs (hashed assets) are uploaded by CI rather than relying on a remote Vercel build. This reduces mismatches between index.html and available assets.
+- If you see asset 404s after deploy, the asset verification step will fail the job and print the missing paths; re-deploy using the prebuilt path or investigate remote build logs in the Vercel dashboard.
+
+Playwright smoke test
+---------------------
+
+After asset verification passes, the deploy workflow runs a focused Playwright "Homepage smoke test" that verifies the starry background and header/logo render in a real browser and that the primary assets are served. If this fails the workflow will fail and print helpful diagnostic output. If your project is SSO-protected ensure `VERCEL_SSO_BYPASS_TOKEN` is set so CI can validate the public pages directly.
+
+Note about Vercel Live / Preview Feedback script:
+- You may notice a small injected script tag like `<script src="https://vercel.live/_next-live/feedback/feedback.js" data-deployment-id="dpl_..."></script>` in deployments. This is Vercel's "Live / Feedback" feature that can be enabled at the project level and injects a feedback widget into preview/production pages. It's benign and unrelated to asset 404s, but if you'd prefer not to have it injected, disable the Live/Feedback toggle in the Vercel project settings.
 - For safety the workflow will fail if SSO is detected (HTTP 401) and no `VERCEL_SSO_BYPASS_TOKEN` is present. If desired, you may set `ALLOW_READYSTATE_FALLBACK=true` as a repository secret to allow using the Vercel API "READY" state as a fallback success signal (less strict).
 
 Required repository secrets

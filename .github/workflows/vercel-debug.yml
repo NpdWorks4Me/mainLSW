@@ -5,6 +5,8 @@ on:
 
 jobs:
   list-projects:
+    # DISABLED: Temporarily prevent this job from running.
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Show environment

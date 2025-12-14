@@ -1,0 +1,28 @@
+## DISABLED WORKFLOW BACKUP
+# This is an archived copy of the active workflow `deploy-vercel.yml`.
+# It has been moved out of `.github/workflows/` to prevent it from running.
+# To re-enable, review and copy relevant sections back into `.github/workflows/deploy-vercel.yml`.
+
+name: ARCHIVED - Deploy to Vercel (disabled)
+
+# --- Original contents below ---
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - deploy
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy (Vercel)
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ... content removed for brevity in archive. See original history for the full workflow. ...

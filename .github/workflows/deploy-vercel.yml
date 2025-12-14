@@ -10,6 +10,8 @@ on:
 jobs:
   build-and-deploy:
     name: Build and Deploy (Vercel)
+    # DISABLED: Prevent this job from running while we pause Vercel deploys.
+    if: false
     runs-on: ubuntu-latest
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
