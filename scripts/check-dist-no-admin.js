@@ -33,15 +33,22 @@ function scanDir(dir) {
     if (ent.isDirectory()) {
       results.push(...scanDir(full));
     } else if (ent.isFile()) {
-      // also check file text for admin-like content for index.html and main bundles
-      try {
-        const txt = fs.readFileSync(full, 'utf8');
-        const lower = txt.toLowerCase();
-        if (ADMIN_INDICATORS.some(i => lower.includes(i.replace('/', '').replace(' ', '')))) {
-          results.push(rel);
+      // Only inspect HTML files for textual indicators. Minified bundles commonly
+      // include strings such as 'admin' as part of library code (e.g., Supabase
+      // internal endpoints). We should avoid false positive matches by only
+      // searching content of HTML files which are more likely to indicate an
+      // admin page being present.
+      const ext = path.extname(ent.name).toLowerCase();
+      if (ext === '.html') {
+        try {
+          const txt = fs.readFileSync(full, 'utf8');
+          const lower = txt.toLowerCase();
+          if (ADMIN_INDICATORS.some(i => lower.includes(i.replace('/', '').replace(' ', '')))) {
+            results.push(rel);
+          }
+        } catch (e) {
+          // ignore read errors
         }
-      } catch (e) {
-        // ignore binary files or read errors
       }
     }
   }

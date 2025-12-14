@@ -17,7 +17,7 @@
     "dev:main": "cd src && npm run dev",
     "start:main": "cd src && npm run start",
     "build": "npm run generate-config && npm run check-config && npm run build:main",
-  "postbuild": "node ./scripts/prepare-root-dist.js",
+  "postbuild": "node ./scripts/prepare-root-dist.js && node ./scripts/write-vercel-json.js",
   "export": "echo 'next export unsupported: admin removed'",
   "dev": "npm run dev:main",
     
