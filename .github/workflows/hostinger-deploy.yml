@@ -101,24 +101,42 @@ jobs:
           fi
 
       - name: Test SSH connectivity (diagnostic)
+        id: ssh_test
         if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
         continue-on-error: true
         run: |
           echo "Testing SSH connectivity to ${HOSTINGER_SSH_HOST} (user: ${HOSTINGER_SSH_USERNAME})"
-          timeout 10 ssh -i /tmp/hostinger_key -o BatchMode=yes -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22} ${HOSTINGER_SSH_USERNAME}@${HOSTINGER_SSH_HOST} 'echo SSH_OK' || true
+          set -o pipefail
+          if timeout 10 ssh -i /tmp/hostinger_key -o BatchMode=yes -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22} ${HOSTINGER_SSH_USERNAME}@${HOSTINGER_SSH_HOST} 'echo SSH_OK' >/tmp/ssh_test 2>&1; then
+            echo "ssh connection succeeded"
+            echo "ssh_ok=true" >> $GITHUB_OUTPUT
+          else
+            echo "ssh connection failed"
+            echo "ssh_ok=false" >> $GITHUB_OUTPUT
+          fi
+          echo "---- SSH test output ----"
+          sed -n '1,200p' /tmp/ssh_test || true
 
       - name: Rsync to Hostinger via SSH (dry-run)
-        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        if: ${{ steps.ssh_test.outputs.ssh_ok == 'true' }}
         continue-on-error: true
         run: |
           echo "Performing dry-run rsync to detect connectivity (no changes will be made)"
           rsync -avz --dry-run -e "ssh -i /tmp/hostinger_key -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}" || true
       - name: Rsync to Hostinger via SSH (live)
-        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        if: ${{ steps.ssh_test.outputs.ssh_ok == 'true' }}
         continue-on-error: true
         run: |
           echo "Uploading dist/ -> ${HOSTINGER_TARGET_DIR_MAIN} on ${HOSTINGER_SSH_HOST}"
           rsync -avz --delete --omit-dir-times --no-perms -e "ssh -i /tmp/hostinger_key -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}"
+
+      - name: DNS/host resolution diagnostics
+        continue-on-error: true
+        run: |
+          echo "DNS check for SSH host: ${HOSTINGER_SSH_HOST}"
+          nslookup "${HOSTINGER_SSH_HOST}" || true
+          echo "DNS check for FTP host: ${{ secrets.HOSTINGER_FTP_HOST }}"
+          nslookup "${{ secrets.HOSTINGER_FTP_HOST }}" || true
 
       - name: Deploy via FTP (fallback)
         if: ${{ steps.prepare.outputs.use_ftp == 'true' }}
