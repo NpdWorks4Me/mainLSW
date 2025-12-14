@@ -112,6 +112,42 @@ If the published site loads `index.html` but assets (under `/assets/`) 404, the 
 
 The `scripts/verify-public-html-assets.sh` script will detect missing files referenced directly from `public_html/index.html` and return a non-zero exit status; use this script within CI or locally to fail fast.
 
+SSH troubleshooting quick guide
+--------------------------------
+If SSH deploys are failing due to connectivity or key format issues, these quick checks will help you diagnose and fix the problem faster before re-running the CI deploy:
+
+- Validate DNS for the SSH host (replace with your secret value):
+
+	dig +short <your-ssh-host>
+	# or
+	nslookup <your-ssh-host>
+
+	If these return nothing (NXDOMAIN), the host is incorrect or not publicly resolvable — ask Hostinger for the correct SSH host or use an IP address.
+
+- Test TCP connectivity to the SSH port (often 22 or a host-specific port):
+
+	nc -vz -w 5 <your-ssh-host> <port>
+
+- Test SSH with your private key locally (do NOT paste keys into GitHub inputs):
+
+	printf "%s" "$(cat /path/to/your/private_key)" > /tmp/key && chmod 600 /tmp/key
+	ssh -i /tmp/key -o BatchMode=yes -o StrictHostKeyChecking=no -p <port> <user>@<host> 'echo SSH_OK'
+
+- If ssh-keygen fails with 'error in libcrypto' when parsing your private key, the key is in the OpenSSH new format and needs to be converted to PEM for some CI environments. Convert locally and then update the GitHub secret:
+
+	ssh-keygen -p -m PEM -N "" -f /path/to/your/private_key
+	# then test parse
+	ssh-keygen -y -f /path/to/your/private_key
+
+After you confirm the host resolves and the key parses locally, update the repository secrets (Settings → Secrets & variables → Actions):
+
+- HOSTINGER_SSH_HOST — the SSH/SFTP host (no https://, no path)
+- HOSTINGER_SSH_USERNAME — the SSH username
+- HOSTINGER_SSH_PRIVATE_KEY — the private key value (PEM if possible; no passphrase recommended for CI)
+- HOSTINGER_SSH_PORT — optional, default 22
+
+Once updated, re-run the Hostinger Deploy workflow or ask me to trigger and monitor it for you.
+
 Using the Hostinger API (script)
 --------------------------------
 If you want to automatically update Hostinger environment variables via an API, this repository includes a helper script: `scripts/set-hostinger-env.js`.
