@@ -103,21 +103,18 @@ jobs:
             echo "Project not found or token lacks access for $VERCEL_PROJECT_ID in org $VERCEL_ORG_ID" && exit 1
           fi
 
+      # Temporarily disable the Vercel GitHub Action to avoid it creating a
+      # remote build that can publish mismatched assets. We will perform a
+      # controlled prebuilt deploy using the Vercel CLI below instead. Re-enable
+      # this action if you prefer the action-based deploy flow.
       - name: Deploy to Vercel (Action)
-        if: env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+        if: false
         uses: amondnet/vercel-action@v20
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          # NOTE: the action still requires `zeit-token` as an input (deprecated name).
-          # Keep it for now for compatibility; remove once the action no longer requires it.
           zeit-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          # Use --yes instead of deprecated --confirm
-          # Use --prebuilt when possible so CI uploads the exact static output in dist/
-          # instead of triggering a remote build which can regenerate assets with
-          # different hashed filenames. This reduces the chance of index.html
-          # referencing files that are not uploaded to the deployment.
           vercel-args: '--prebuilt --prod --yes --cwd dist'
 
       - name: Deploy to Vercel (CLI)
