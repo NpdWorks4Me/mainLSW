@@ -45,6 +45,32 @@ jobs:
           ls -la dist || (echo "dist does not exist" && exit 1)
           if [ ! -f dist/index.html ]; then echo "dist/index.html missing" && exit 1; fi
 
+      - name: Pre-deploy: verify dist/index.html references present
+        run: |
+          set -euo pipefail
+          echo "Verifying that every asset referenced in dist/index.html exists in dist/"
+          grep -Eo 'src="(/[^"]+)"|href="(/[^"]+)"' dist/index.html | sed -E 's/.*("|\')(\/[^"'\']+)("|\')/\2/' | sort -u > /tmp/dist.assets || true
+          MISSING=0
+          while read -r p; do
+            # Only check local paths
+            case "$p" in
+              /*)
+                localpath="dist${p}"
+                if [ ! -f "$localpath" ]; then
+                  echo "Missing in dist/: $p (expected $localpath)" >&2
+                  MISSING=1
+                fi
+                ;;
+              *)
+                echo "Skipping non-local asset: $p"
+                ;;
+            esac
+          done < /tmp/dist.assets
+          if [ "$MISSING" -ne 0 ]; then
+            echo "One or more referenced assets are missing from dist/; aborting deploy" >&2
+            exit 1
+          fi
+
       - name: Print vercel version (debug)
         run: npx --yes vercel --version || true
 
@@ -88,7 +114,11 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           # Use --yes instead of deprecated --confirm
-          vercel-args: '--prod --yes --cwd dist'
+          # Use --prebuilt when possible so CI uploads the exact static output in dist/
+          # instead of triggering a remote build which can regenerate assets with
+          # different hashed filenames. This reduces the chance of index.html
+          # referencing files that are not uploaded to the deployment.
+          vercel-args: '--prebuilt --prod --yes --cwd dist'
 
       - name: Deploy to Vercel (CLI)
         run: |
@@ -197,3 +227,73 @@ jobs:
           echo "Smoke test failed; public GET returned status: $STATUS" >&2
           head -n 50 /tmp/smoke.html || true
           exit 1
+
+      - name: Post-deploy asset verification
+        if: env.VERCEL_PROJECT_ID != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          echo "Fetching project info for $VERCEL_PROJECT_ID (asset verification)"
+          curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v1/projects/$VERCEL_PROJECT_ID" -o /tmp/project.json
+
+          URL=$(jq -r '
+            ( .alias[]? as $a |
+                (if ($a|type) == "string" then $a
+                 elif ($a.deployment? // false) then ($a.deployment.alias[]?)
+                 elif ($a.alias? // false) then ($a.alias[]?)
+                 else empty end)
+            ) // .latestDeployments[0].url // (.latestDeployments[0].alias[]? // empty) | select(.)' /tmp/project.json 2>/dev/null | head -n1 || true)
+
+          if [ -z "$URL" ]; then
+            echo "Could not determine deployment URL from project metadata" >&2
+            head -c 400 /tmp/project.json || true
+            exit 1
+          fi
+          HOST=$(echo "$URL" | sed -E 's|^https?://||')
+          echo "Detected deployment host: $HOST"
+
+          echo "Downloading index.html from https://$HOST"
+          curl -s -L "https://$HOST" -o /tmp/smoke.html || true
+
+          # Extract asset URLs (scripts/styles/hrefs and common top-level files)
+          ASSETS=$(grep -Eo 'src="(/[^"]+)"|href="(/[^"]+)"' /tmp/smoke.html | sed -E 's/.*("|\')(\/[^"'\']+)("|\')/\2/' | grep -E '^/(assets|sw.js|favicon.svg|manifest.json|sitemap.xml|icons/)' || true)
+
+          if [ -z "$ASSETS" ]; then
+            echo "No assets found in index.html; aborting asset verification" >&2
+            head -n 50 /tmp/smoke.html || true
+            exit 1
+          fi
+
+          MISSING=0
+          echo "Checking assets from index.html (unique):"
+          echo "$ASSETS" | sort -u | while read -r path; do
+            echo " - Checking https://$HOST$path"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L "https://$HOST$path" || true)
+            if [ "$STATUS" != "200" ]; then
+              echo "   -> MISSING or non-200 status: $STATUS" >&2
+              MISSING=1
+            else
+              echo "   -> OK"
+            fi
+          done
+
+          # Diagnostic: fetch the deployment's file list via Vercel API and
+          # print any files under /assets so we can see whether the uploaded
+          # deployment actually contains the expected asset files.
+          DEPLOY_ID=$(jq -r '.latestDeployments[0].id // empty' /tmp/project.json || true)
+          if [ -n "$DEPLOY_ID" ]; then
+            echo "Fetching deployment file list for $DEPLOY_ID"
+            curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v12/now/deployments/$DEPLOY_ID/files" -o /tmp/deploy_files.json || true
+            echo "Files (matching /assets) in deployment $DEPLOY_ID:"
+            jq -r '.[] | select(.file | test("^/assets/")) | .file' /tmp/deploy_files.json || echo "(none)"
+          else
+            echo "Could not determine deployment id for file listing" >&2
+          fi
+
+          if [ "$MISSING" -ne 0 ]; then
+            echo "One or more assets referenced from index.html are not present on the deployment. This likely explains a blank/JS-less page."
+            echo "Tips: prefer a prebuilt deploy (vercel deploy --prebuilt --cwd dist) so the exact built assets are uploaded, or ensure the remote build produces and publishes all assets."
+            exit 1
+          fi
