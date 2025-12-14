@@ -92,6 +92,10 @@ module.exports = {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
         }
+				,'planet-rotate': {
+					from: { transform: 'rotate(0deg)' },
+					to: { transform: 'rotate(360deg)' },
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -99,7 +103,15 @@ module.exports = {
         'gummy-btn-hover-sm': 'gummy-btn-hover-sm 0.5s linear',
         'gummy-btn-press-sm': 'gummy-btn-press-sm 0.3s linear',
         'pulse': 'pulse 4s linear infinite',
+				'planet-rotate-ultra-slow': 'planet-rotate 350s linear infinite',
 			},
+		safelist: [
+			'animate-planet-rotate-ultra-slow',
+			'planet',
+			'glass-card',
+			'text-glow',
+			{ pattern: /^(bg|from|to|via)-/ }
+		],
       transitionTimingFunction: {
         'ease-squish': 'cubic-bezier(0.2, 1, 0.2, 1)',
       }

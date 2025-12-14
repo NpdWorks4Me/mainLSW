@@ -1,18 +1,123 @@
-name: DEPRECATED - hostinger-deploy (moved)
-
-# This workflow is deprecated and kept only for audit/history. Use
-# .github/workflows/hostinger-deploy-main.yml which only builds and deploys
-# the main Vite site (dist). The old workflow previously contained admin
-# build and deploy steps; those were removed to ensure CI only handles the
-# main site.
+name: Hostinger Deploy
 
 on:
-  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: 'Optional preview URL to verify after deploy (overrides secret HOSTINGER_SITE_URL)'
+        required: false
+
 
 jobs:
-  noop:
+  deploy:
     runs-on: ubuntu-latest
+    env:
+      HOSTINGER_TARGET_DIR_MAIN: ${{ secrets.HOSTINGER_TARGET_DIR_MAIN || 'public_html' }}
+      HOSTINGER_SITE_URL: ${{ github.event.inputs.site_url || secrets.HOSTINGER_SITE_URL || '' }}
     steps:
-      - name: Deprecation notice
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify dist assets
+        run: ./scripts/verify-dist-assets.sh
+
+      - name: Prepare deploy method and validate secrets
+        id: prepare
         run: |
-          echo "This workflow is deprecated — use .github/workflows/hostinger-deploy-main.yml which only deploys the main site."
+          echo "Preparing deploy method..."
+          USE_SSH=false
+          USE_FTP=false
+          # Detect SSH secrets presence
+          if [ -n "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" ] && [ -n "${{ secrets.HOSTINGER_SSH_HOST }}" ] && [ -n "${{ secrets.HOSTINGER_SSH_USERNAME }}" ]; then
+            USE_SSH=true
+            echo "Detected SSH deploy configuration"
+          else
+            echo "SSH deploy configuration not fully provided (HOSTINGER_SSH_PRIVATE_KEY/HOSTINGER_SSH_HOST/HOSTINGER_SSH_USERNAME)"
+          fi
+          # Detect FTP secrets presence
+          if [ -n "${{ secrets.HOSTINGER_FTP_HOST }}" ] && [ -n "${{ secrets.HOSTINGER_FTP_USERNAME }}" ] && [ -n "${{ secrets.HOSTINGER_FTP_PASSWORD }}" ]; then
+            USE_FTP=true
+            echo "Detected FTP deploy configuration"
+          else
+            echo "FTP deploy configuration not fully provided (HOSTINGER_FTP_HOST/HOSTINGER_FTP_USERNAME/HOSTINGER_FTP_PASSWORD)"
+          fi
+          TARGET_DIR="${{ secrets.HOSTINGER_TARGET_DIR_MAIN || 'public_html' }}"
+          echo "target_dir=$TARGET_DIR" >> $GITHUB_OUTPUT
+          echo "use_ssh=$USE_SSH" >> $GITHUB_OUTPUT
+          echo "use_ftp=$USE_FTP" >> $GITHUB_OUTPUT
+
+      - name: Show selected deploy method
+        run: |
+          echo "use_ssh=${{ steps.prepare.outputs.use_ssh }}"
+          echo "use_ftp=${{ steps.prepare.outputs.use_ftp }}"
+          echo "target_dir=${{ steps.prepare.outputs.target_dir }}"
+
+      - name: Fail if no deploy method configured
+        if: ${{ steps.prepare.outputs.use_ssh == 'false' && steps.prepare.outputs.use_ftp == 'false' }}
+        run: |
+          echo "No deploy method configured: neither SSH nor FTP secrets were detected. Add secrets to enable deployment." >&2
+          exit 1
+
+      - name: Deploy via SSH (if HOSTINGER_SSH_PRIVATE_KEY is provided)
+        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+
+      - name: Rsync to Hostinger via SSH
+        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        run: |
+          echo "Performing dry-run rsync to detect connectivity (no changes will be made)"
+          rsync -avz --dry-run -e "ssh -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}" || true
+      - name: Rsync to Hostinger via SSH (live)
+        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        run: |
+          echo "Uploading dist/ -> ${HOSTINGER_TARGET_DIR_MAIN} on ${HOSTINGER_SSH_HOST}"
+          rsync -avz --delete --omit-dir-times --no-perms -e "ssh -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}"
+
+      - name: Deploy via FTP (fallback)
+        if: ${{ steps.prepare.outputs.use_ftp == 'true' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.2.0
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_HOST }}
+          username: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          server-dir: ${{ env.HOSTINGER_TARGET_DIR_MAIN }}
+          local-dir: dist
+
+      - name: Wait for remote to settle
+        run: sleep 5
+
+      - name: Generate dist listing (for diagnostics)
+        run: |
+          echo "Generating dist listing"
+          ls -la dist | sed -n '1,200p' > dist-listing.txt || true
+
+      - name: Upload dist listing artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-listing
+          path: dist-listing.txt
+
+      - name: Verify deployed site (if HOSTINGER_SITE_URL set)
+        if: ${{ env.HOSTINGER_SITE_URL != '' }}
+        run: |
+          echo "Verifying site at ${HOSTINGER_SITE_URL}"
+          ./scripts/verify-hosting-deploy.sh "${HOSTINGER_SITE_URL}"
+
+      - name: Done — show preview URL
+        run: |
+          echo "Deploy complete. Preview: ${HOSTINGER_SITE_URL:-(set HOSTINGER_SITE_URL secret or use workflow input 'site_url')}"

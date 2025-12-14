@@ -27,6 +27,24 @@ Notes and examples
 GitHub Actions and secrets
 --------------------------
 - If you set up the `.github/workflows/hostinger-deploy.yml` workflow, add the appropriate secrets to your GitHub repository under Settings → Secrets → Actions.
+ - This repo includes a ready-to-use GitHub Action at `.github/workflows/hostinger-deploy-main.yml` that builds, tests, and deploys the main `dist/` site to Hostinger (it will use SSH/SFTP when `HOSTINGER_SSH_PRIVATE_KEY` is present, otherwise it falls back to FTP). Add the secrets listed below to enable automated deploys from CI.
+
+Triggering a manual deploy from the command line
+-----------------------------------------------
+You can trigger the deploy from your machine using the GitHub CLI (`gh`) once you've added the secrets to the repository:
+
+```bash
+# Trigger a manual deploy and pass a preview URL to verify against (optional)
+gh workflow run hostinger-deploy-main.yml --ref main --field site_url=https://littlespaceworld.com
+```
+
+Or open the repository → Actions → "Build, Test, and Deploy to Hostinger (main only)" and click "Run workflow" and optionally supply `site_url`.
+
+If a step fails, check the job logs and the `dist-listing` artifact (uploaded by the workflow) to validate the files that were built. The workflow will also report whether SSH or FTP secrets were used.
+
+Secret report artifact
+----------------------
+The workflow now uploads a small `secrets-report` artifact that lists which deployment/build-related secrets are present or missing. If you see missing entries there, add the corresponding secrets in the GitHub repo settings (Settings → Secrets & variables → Actions) and re-run the workflow.
  - If you set up the `.github/workflows/hostinger-deploy.yml` workflow, add the appropriate secrets to your GitHub repository under Settings → Secrets → Actions. To automate runtime env updates via our script in CI, add the following secrets too:
 	 - `HOSTINGER_API_TOKEN` — API token with permission to update site settings (optional if using SFTP/SSH).
  	 - `HOSTINGER_SITE_ID` — the internal site identifier in Hostinger for your site (use the main site ID for automations).
@@ -71,7 +89,27 @@ Troubleshooting
 - Build succeeds but assets 404: make sure the Build command is correct and Hostinger's Output folder is set to `dist` (for the main site). Admin build outputs are legacy and not applicable to this repository.
 - CSP blocking Supabase requests: ensure `VITE_SUPABASE_URL` is set in Hostinger environment variables so the build includes the Supabase origin in meta and `.htaccess` CSP.
 
-If you want, I can create a GitHub Action that builds both the main site and the admin site and, if desired, uploads built artifacts via FTP or Hostinger API (if available). This is useful if Hostinger's build environment is limited.
+
+Quick local deploy & verification
+---------------------------------
+If you want to quickly publish the current local build to the `public_html/` folder and verify assets, run from the repo root:
+
+```bash
+# Build, copy dist -> public_html, then verify that every asset referenced by public_html/index.html exists
+npm run deploy:hostinger
+```
+
+After this completes, the site is ready to be served from `public_html/`. You can preview it locally with a simple static server (Python, http-server, or `npx serve`) and run the Playwright smoke test against your preview URL.
+
+Troubleshooting: assets 404
+---------------------------
+If the published site loads `index.html` but assets (under `/assets/`) 404, the most common causes are:
+
+- The build output wasn't copied into `public_html/` (run `npm run deploy:hostinger` to republish).
+- Hostinger's 'Output folder' setting is not pointed at `dist` (if you let Hostinger build during deployment).
+- A CDN, proxy, or SSO protection is blocking public GETs to assets. In this case run the Playwright smoke test with a bypass token or test against a preview URL.
+
+The `scripts/verify-public-html-assets.sh` script will detect missing files referenced directly from `public_html/index.html` and return a non-zero exit status; use this script within CI or locally to fail fast.
 
 Using the Hostinger API (script)
 --------------------------------

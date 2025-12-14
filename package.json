@@ -6,32 +6,31 @@
   "engines": {
     "node": ">=20"
   },
-"scripts": {
-  "prebuild": "node ./scripts/check-env.cjs",
-  "generate-config": "node ./scripts/generate-config.cjs",
-  "check-config": "node ./scripts/check-config.cjs",
-
-  "vercel-build": "npm run generate-config && npm run check-config && echo 'vercel build unsupported: Next.js admin removed'",
-  "build:main": "cd src && npm ci && npm run build",
-  "build:main-only": "cd src && npm ci && npm run build",
+  "scripts": {
+    "prebuild": "node ./scripts/check-env.cjs",
+    "generate-config": "node ./scripts/generate-config.cjs",
+    "check-config": "node ./scripts/check-config.cjs",
+    "vercel-build": "npm run generate-config && npm run check-config && echo 'vercel build unsupported: Next.js admin removed'",
+    "build:main": "cd src && npm ci && npm run build",
+    "build:main-only": "cd src && npm ci && npm run build",
     "dev:main": "cd src && npm run dev",
     "start:main": "cd src && npm run start",
     "build": "npm run generate-config && npm run check-config && npm run build:main",
-  "postbuild": "node ./scripts/prepare-root-dist.js && node ./scripts/write-vercel-json.js",
-  "export": "echo 'next export unsupported: admin removed'",
-  "dev": "npm run dev:main",
-    
-  "start": "npm run start:main",
-    
+    "postbuild": "node ./scripts/prepare-root-dist.js && node ./scripts/write-vercel-json.js",
+    "export": "echo 'next export unsupported: admin removed'",
+    "dev": "npm run dev:main",
+    "start": "npm run start:main",
     "verify:local": "./scripts/verify-local-assets.sh http://localhost:3000",
     "verify:deploy": "./scripts/verify-hosting-deploy.sh",
-    
+  "deploy:hostinger": "npm run build && node ./scripts/redeploy-main.js && bash ./scripts/verify-public-html-assets.sh",
     "verify:console": "node ./scripts/playwright-check-store.js http://localhost:3000/store/",
     "preview": "cd src && npm run preview",
-  "check:predeploy": "node ./scripts/check-deploy-type.js --dir dist",
-  "check:dist-no-admin": "node ./scripts/check-dist-no-admin.js --dir dist",
+  "preview:public": "npx http-server public_html -p 3000 --silent",
+    "check:predeploy": "node ./scripts/check-deploy-type.js --dir dist",
+    "check:dist-no-admin": "node ./scripts/check-dist-no-admin.js --dir dist",
     "sitemap": "node scripts/generate-site-map.js && node scripts/refine-site-map.js && node scripts/generate-xml-sitemap.mjs",
-  "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+  "test:e2e": "playwright test",
     "format": "prettier --write ."
   },
   "dependencies": {
@@ -50,25 +49,24 @@
     "lucide-react": "^0.400.0",
     "nipplejs": "^0.9.0",
     "phaser": "^3.60.0",
-    
-  "react": "^18.2.0",
-  "react-dom": "^18.2.0",
-    
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "stripe": "^12.10.0",
     "tailwind-merge": "^1.14.0",
     "zod": "^3.22.0",
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.44.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/postcss": "^4.1.17",
     "autoprefixer": "^10.4.22",
     "eslint": "^8.57.0",
+    "fs-extra": "^11.1.1",
     "postcss-import": "^16.1.1",
     "prettier": "^3.3.0",
     "tailwindcss": "^4.1.17",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.5.0",
-  "fs-extra": "^11.1.1"
+    "typescript": "^5.5.0"
   }
 }
