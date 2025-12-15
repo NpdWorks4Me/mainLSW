@@ -1,8 +1,11 @@
-This directory contains CI workflows related to deployment.
+# CI Workflows
 
-deploy-vercel.yml
-- Builds the project using Node 20 and `npm run build` (root) which creates `dist/`.
-- Deploys the content of `dist/` to Vercel using the Vercel CLI.
+This directory contains CI workflow documentation and archived workflows.
+
+- Vercel-related workflows (deploy/vercel-debug) have been archived and disabled in `.github/disabled-workflows/`.
+- Hostinger deploy workflows are the active path for production deploys.
+
+> Status: Vercel CI Disabled / Deprecated — archives retained for reference. Prefer the Hostinger deploy workflow in `.github/workflows/hostinger-deploy.yml` and the Hostinger runbooks in `HOSTINGER_DEPLOY.md`.
 
 Secrets required:
 - `VERCEL_TOKEN` — Vercel personal token (required). Add it in the GitHub repository Settings → Secrets.
@@ -13,11 +16,6 @@ Optional:
 To trigger a manual deploy from the Actions tab, open the "Deploy to Vercel" workflow and click "Run workflow".
 
 More: Use either the CLI approach (current workflow) or the Vercel GitHub action if you want to provide explicit org/project IDs.
-
-Status: Vercel CI Disabled
----------------------------------
-
-We have temporarily disabled all Vercel-related workflows (deploy/debug) to pause automatic and manual Vercel activity while we investigate deployment issues. The workflows have been archived to `.github/disabled-workflows/` and will not run. To re-enable, review the archived copy and restore the workflow to `.github/workflows/` (or remove the `if: false` guard after confirming it's safe).
 
 Playwright smoke tests
 ----------------------

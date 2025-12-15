@@ -52,46 +52,11 @@ Check `package.json` scripts for exact commands.
 
 ---
 
-## Admin (Next.js) — Developer Notes
+## Admin (removed)
 
-- Uses Next.js 16 App Router with server components.
-- Ensure `next`, `react`, and `react-dom` exist in dependencies (not only devDependencies).
-- Environment variables:
-  - NEXT_PUBLIC_SUPABASE_URL
-  - NEXT_PUBLIC_SUPABASE_ANON_KEY
-  - SUPABASE_SERVICE_ROLE (server only)
-  - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  - STRIPE_SECRET_KEY (server only)
-- To run locally:
-  npm run dev:admin
-- Build and export (if needed):
-  npm run build:admin   # For static export (if you prefer)
-  npm run vercel-build  # If custom vercel-build script present
+The Admin dashboard (previously a Next.js app deployed to Vercel) has been removed from this repository and its deployment details have been archived. If you require an admin UI, create a separate repository or project and follow Hostinger or other platform docs for deployment.
 
----
-
-## Admin Dynamic Deployment to Vercel — Steps
-
-1. Vercel project: js-projects-1788e21a/admin (project id: prj_aNITgq7TqCHyBaqMo4BSQaD6Dcr1)
-2. Set Root Directory:
-   - If deploying the Next.js app from repository root: Root Directory = `.`
-   - If deploying from subfolder with source: set that path
-3. Framework Preset:
-   - Set to `Next.js`
-4. Build & Output:
-   - Build Command: empty or `npm run vercel-build` (if provided)
-   - Install Command: `npm install`
-   - Output Directory: leave blank (Next.js uses `.next`)
-5. Environment Variables:
-   - Add required NEXT_PUBLIC_* keys and server keys as protected values
-6. Redeploy:
-   - Redeploy without cache; watch build logs
-   - Success expected: "Detected Next.js version: 16.x.x"
-
-If `No Next.js version detected` error occurs:
-- Confirm `next` exists in package.json of the configured root directory
-- Confirm package.json actually exists in that folder
-- Use `vercel.json` to pin `buildCommand` or `rootDirectory` if a monorepo
+> For historical reference only: Vercel-related instructions are preserved in `docs/vercel-deploy.md` (DEPRECATED).
 
 ---
 
