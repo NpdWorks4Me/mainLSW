@@ -49,6 +49,7 @@ const BlogPostInnerChildJournaling = lazy(() => import('@/pages/BlogPostInnerChi
 const BlogPostAgeRegression = lazy(() => import('@/pages/BlogPostAgeRegression'));
 
 const ActivitiesPage = lazy(() => import('@/pages/ActivitiesPage'));
+const GamesPage = lazy(() => import('@/pages/GamesPage'));
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/TermsPage'));
 const CookiePolicyPage = lazy(() => import('@/pages/CookiePolicyPage'));
@@ -169,6 +170,7 @@ function App() {
                               {/* Other Routes */}
                               <Route path="coloring-pages" element={<RouteWrapper><ActivitiesPage /></RouteWrapper>} />
                               {/* Games */}
+                              <Route path="games" element={<RouteWrapper><GamesPage /></RouteWrapper>} />
                               <Route path="games/snake" element={<RouteWrapper><SnakeGamePage /></RouteWrapper>} />
                               <Route path="guidance-and-support" element={<RouteWrapper><GuidanceAndSupportPage /></RouteWrapper>} />
                               <Route path="about" element={<RouteWrapper><AboutPage /></RouteWrapper>} />

@@ -67,6 +67,17 @@ const InfoCard = ({ item, openStory, openInfoModal }) => {
   const Icon = item.icon;
   const glowColor = item.glowColor || 'cyan';
 
+  // Map known semantic colors to concrete Tailwind utility classes to avoid
+  // dynamic class strings that Tailwind JIT may purge.
+  const glowColorMap = {
+    fuchsia: 'text-fuchsia-400',
+    cyan: 'text-cyan-400',
+    emerald: 'text-emerald-400',
+    emeralds: 'text-emerald-400',
+    default: 'text-cyan-400'
+  };
+  const glowClass = glowColorMap[glowColor] || glowColorMap.default;
+
   const handleClick = () => {
     if (item.action) {
       openStory(item.action);
@@ -81,7 +92,7 @@ const InfoCard = ({ item, openStory, openInfoModal }) => {
         {/* Icon with Glow */}
         <div className="relative transform scale-75 md:scale-100 mb-1 md:mb-0">
           <div className="absolute inset-0 blur-xl animate-pulse">
-            <Icon className={`w-16 h-16 text-${glowColor}-400`} />
+            <Icon className={`w-16 h-16 ${glowClass}`} />
           </div>
           <Icon className="relative w-16 h-16 text-white drop-shadow-2xl" strokeWidth={2} />
         </div>
