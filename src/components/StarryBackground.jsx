@@ -11,18 +11,22 @@ const StarryBackground = () => {
   // Generate box-shadow strings for mobile version
   // We use useMemo to generate these only once to avoid expensive recalculations
   const mobileShadows = useMemo(() => {
+    // Use viewport-relative vertical offsets (vh) and significantly smaller counts
+    // to avoid creating huge inline styles and extremely large layout extents.
     const generateShadows = (n) => {
-      let value = `${Math.random() * 100}vw ${Math.random() * 2000}px #FFF`;
-      for (let i = 2; i <= n; i++) {
-        value += `, ${Math.random() * 100}vw ${Math.random() * 2000}px #FFF`;
+      const parts = [];
+      for (let i = 0; i < n; i++) {
+        const x = (Math.random() * 100).toFixed(3);
+        const y = (Math.random() * 100).toFixed(3);
+        parts.push(`${x}vw ${y}vh #FFF`);
       }
-      return value;
+      return parts.join(', ');
     };
 
     return {
-      small: generateShadows(150),  // Reduced count for better mobile performance
-      medium: generateShadows(50),
-      large: generateShadows(20)
+      small: generateShadows(40),  // lighter for mobile
+      medium: generateShadows(18),
+      large: generateShadows(8)
     };
   }, []);
 

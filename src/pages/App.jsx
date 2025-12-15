@@ -100,7 +100,7 @@ function App() {
   const location = useLocation();
 
   return (
-    <HelmetProvider>
+  <HelmetProvider>
       <CookieConsentProvider>
         <AuthProvider>
           <AuthModalProvider>
@@ -200,7 +200,7 @@ function App() {
           </AuthModalProvider>
         </AuthProvider>
       </CookieConsentProvider>
-    </HelmetProvider>
+  </HelmetProvider>
   );
 }
 

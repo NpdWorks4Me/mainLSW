@@ -39,6 +39,21 @@ self.addEventListener('fetch', (event) => {
   // Skip non-http requests (e.g., chrome-extension)
   if (!event.request.url.startsWith('http')) return;
 
+  // Do not intercept cross-origin API calls (avoid caching or fetch interception
+  // for third-party APIs which may enforce CORS or have dynamic responses).
+  // Allow caching for known image/CDN hosts (supabase/cdn) that we explicitly handle below.
+  try {
+    const reqUrl = new URL(event.request.url);
+    const isSameOrigin = reqUrl.origin === self.location.origin;
+    const allowCrossOrigin = reqUrl.hostname.includes('supabase.co') || reqUrl.hostname.includes('cdn.zyrosite.com');
+    if (!isSameOrigin && !allowCrossOrigin) {
+      // Don't call event.respondWith — let the browser handle the network request directly.
+      return;
+    }
+  } catch (err) {
+    // If parsing fails, continue and let the default handler run
+  }
+
   // Strategy for Supabase Storage Images (Cache First)
   if (event.request.url.includes('supabase.co/storage')) {
     event.respondWith(

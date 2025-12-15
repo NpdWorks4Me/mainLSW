@@ -9,6 +9,16 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
   useEffect(() => {
     let mounted = true;
     let scene = null;
+    let PhaserLib = null;
+    // Expose a safe getter early so tests that opt-in don't throw when calling it
+    // before the game is created. This avoids uncaught TypeErrors when page
+    // scripts call window.getPhaserGame().scene while gameRef.current is null.
+    try {
+      if (typeof window !== 'undefined' && window.__PHASER_DEBUG__) {
+        window.getPhaserGame = () => ({ scene: { getScene: () => undefined, getScenes: () => [] } });
+        console.debug('[PhaserCanvas] safe window.getPhaserGame attached (no game yet)');
+      }
+    } catch (e) { /* ignore */ }
     // Dynamically import Phaser and the scene factory on the client only
     const loadPhaser = async () => {
       try {
@@ -17,14 +27,18 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
           import('phaser')
         ]);
         const createSnakeScene = sceneMod && sceneMod.default ? sceneMod.default : null;
-        const PhaserLib = phaserMod && phaserMod.default ? phaserMod.default : phaserMod;
+        PhaserLib = phaserMod && phaserMod.default ? phaserMod.default : phaserMod;
         if (!createSnakeScene || !PhaserLib) {
           console.error('[PhaserCanvas] Failed to dynamically import Phaser or SnakeScene');
           return;
         }
         scene = createSnakeScene(PhaserLib);
-        // After loading, attempt to create the game
-        if (mounted) createIfReady();
+        // After loading, attempt to create the game and log the state
+        console.debug('[PhaserCanvas] loadPhaser: imports done', { hasScene: !!scene, hasPhaser: !!PhaserLib });
+        if (mounted) {
+          const created = createIfReady();
+          console.debug('[PhaserCanvas] loadPhaser: createIfReady returned', { created, hasGame: !!gameRef.current });
+        }
       } catch (err) {
         console.error('[PhaserCanvas] dynamic import failed', err);
       }
@@ -39,12 +53,14 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
     };
     const size = getSize();
   const createConfig = (w, h) => ({
-      type: Phaser.AUTO,
+      // Use the dynamically-loaded Phaser lib for constants (PhaserLib may be null
+      // until the dynamic import resolves).
+      type: (PhaserLib && PhaserLib.AUTO) || 0,
       parent: containerRef.current,
       backgroundColor: '#000000',
       scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
+        mode: PhaserLib && PhaserLib.Scale ? PhaserLib.Scale.FIT : undefined,
+        autoCenter: PhaserLib && PhaserLib.Scale ? PhaserLib.Scale.CENTER_BOTH : undefined,
         width: w,
         height: h,
       },
@@ -61,13 +77,18 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
         const rw = Math.round(Math.max(1, w) * dpr);
         const rh = Math.round(Math.max(1, h) * dpr);
         if (rw <= 1 || rh <= 1) return false;
-        if (!gameRef.current && scene) {
-          gameRef.current = new (awaitablePhaserGameCreator(createConfig))(scene);
-          // In case Phaser wasn't loaded at file top-level, we construct using the scene class
-          try { if (gameRef.current && gameRef.current.canvas) gameRef.current.canvas.setAttribute('data-testid', 'phaser-canvas'); } catch (e) {}
-          console.debug('[PhaserCanvas] Game created with', rw, rh);
+        if (!gameRef.current && scene && PhaserLib) {
+          // Create the Phaser.Game instance directly using the dynamically-loaded Phaser lib
+          try {
+            console.debug('[PhaserCanvas] createIfReady: creating Phaser.Game', { rw, rh, hasPhaser: !!PhaserLib, hasScene: !!scene, PhaserGameCtor: !!PhaserLib && !!PhaserLib.Game });
+            gameRef.current = new PhaserLib.Game({ ...createConfig(rw, rh), scene: [scene] });
+            if (gameRef.current && gameRef.current.canvas) gameRef.current.canvas.setAttribute('data-testid', 'phaser-canvas');
+            console.debug('[PhaserCanvas] Game created with', rw, rh);
+          } catch (err) {
+            console.error('[PhaserCanvas] Failed to create Phaser.Game', err, { rw, rh, hasPhaser: !!PhaserLib, hasScene: !!scene });
+          }
         }
-        return true;
+  return !!gameRef.current;
       } catch (err) {
         console.error('[PhaserCanvas] Failed to create Phaser.Game', err);
         return false;
@@ -77,27 +98,22 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
     // Helper to create Phaser.Game after dynamic import was done. We can't reference the Phaser
     // constructor until it's loaded; build an adapter that will create the Game when Phaser is available.
     function awaitablePhaserGameCreator(config) {
-      // If Phaser is loaded, create Game immediately
-      try {
-        // eslint-disable-next-line global-require
-        const PhaserLib = require('phaser');
-        return function(SceneClass) {
-          return new PhaserLib.Game({ ...config, scene: [SceneClass] });
-        }(scene);
-      } catch (err) {
-        // Fallback: try to import Phaser synchronously isn't possible; throw to be caught above
-        throw err;
-      }
+      // Deprecated adapter retained temporarily for backward compat; prefer direct creation above.
+      throw new Error('awaitablePhaserGameCreator is deprecated; Phaser should be created directly after dynamic import');
     }
 
     if (mounted) {
-      // If the container already has a size, create immediately
-      if (!createIfReady()) {
-        // Otherwise, wait for the container to be sized using ResizeObserver
+      // If the container already has a size, attempt to create immediately.
+      // If creation did not succeed (for example because dynamic imports
+      // haven't completed yet) continue polling until the game instance
+      // exists to avoid a single false-positive preventing later creation.
+      const created = createIfReady();
+      if (!created || !gameRef.current) {
         const waitInterval = setInterval(() => {
-          if (createIfReady()) clearInterval(waitInterval);
+          if (createIfReady() && gameRef.current) clearInterval(waitInterval);
         }, 50);
-        }
+      }
+    }
   // Debugging: log to console so Playwright captures attachment time
   try { console.debug('[PhaserCanvas] Game created', !!gameRef.current); } catch (e) {}
       // Controlled debug interface: only expose a getter when the test harness opts in
@@ -106,48 +122,48 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
           try { window.getPhaserGame = () => gameRef.current; } catch (e) { /* ignore */ }
           try { console.debug('[PhaserCanvas] window.getPhaserGame attached'); } catch (e) {}
           if (containerRef.current) {
-            try { containerRef.current.getPhaserGame = () => gameRef.current; } catch (e) { /* ignore */ }
+            try { containerRef.current.getPhaserGame = () => gameRef.current || { scene: { getScene: () => undefined, getScenes: () => [] } }; } catch (e) { /* ignore */ }
             try { console.debug('[PhaserCanvas] container.getPhaserGame attached'); } catch (e) {}
           }
         }
       } catch (e) { /* ignore */ }
-      // Wire store updates and direction event once scene is created inside the game
-      let gameScene = gameRef.current.scene.getScene('SnakeScene') || (gameRef.current.scene.getScenes && gameRef.current.scene.getScenes()[0]);
-      // If the scene isn't immediately available, poll for a short while to attach listeners
-  let scenePollAttempts = 0;
-  const queuedControls = [];
-  const queuedDirs = [];
-  const queuedSwipes = [];
+      // Wire store updates and direction event once the Phaser scene is available
+      let gameScene = null;
+      let scenePollAttempts = 0;
+      const queuedControls = [];
+      const queuedDirs = [];
+      const queuedSwipes = [];
+
       const attachEvents = (s) => {
-        if (s && s.events) {
-          s.events.on('update', (payload) => {
-            useGameStore.getState().setScore(payload.score || 0);
-          });
-          s.events.on('gameOver', (score) => {
-            useGameStore.getState().setRunning(false);
-          });
-          s.events.on('ateFood', (score) => {
-            useGameStore.getState().setScore(score);
-          });
-          // Allow test harness to trigger simulated swipes reliably
-          try {
-            const onSimSwipe = (ev) => { if (s && typeof s.processSimulatedSwipe === 'function') s.processSimulatedSwipe(ev.detail); };
-            if (typeof window !== 'undefined') {
-              window.addEventListener('snake-simulate-swipe', onSimSwipe);
-              try { console.debug('[PhaserCanvas] attached snake-simulate-swipe listener'); } catch (e) {}
-            }
-            // store ref for cleanup
-            s.__onSimSwipe = onSimSwipe;
-          } catch (err) { try { console.error('[PhaserCanvas] failed to attach onSimSwipe', err); } catch (e) {} }
-          return true;
-        }
-        return false;
+        if (!s || !s.events) return false;
+        s.events.on('update', (payload) => {
+          useGameStore.getState().setScore(payload.score || 0);
+        });
+        s.events.on('gameOver', (score) => {
+          useGameStore.getState().setRunning(false);
+        });
+        s.events.on('ateFood', (score) => {
+          useGameStore.getState().setScore(score);
+        });
+        // Allow test harness to trigger simulated swipes reliably
+        try {
+          const onSimSwipe = (ev) => { if (s && typeof s.processSimulatedSwipe === 'function') s.processSimulatedSwipe(ev.detail); };
+          if (typeof window !== 'undefined') {
+            window.addEventListener('snake-simulate-swipe', onSimSwipe);
+            try { console.debug('[PhaserCanvas] attached snake-simulate-swipe listener'); } catch (e) {}
+          }
+          s.__onSimSwipe = onSimSwipe;
+        } catch (err) { try { console.error('[PhaserCanvas] failed to attach onSimSwipe', err); } catch (e) {} }
+        return true;
       };
 
+      // Poll safely for the scene, ensuring gameRef.current exists before accessing it
       if (!gameScene || !gameScene.events) {
         const interval = setInterval(() => {
           scenePollAttempts++;
-          gameScene = gameRef.current.scene.getScene('SnakeScene') || (gameRef.current.scene.getScenes && gameRef.current.scene.getScenes()[0]);
+          if (gameRef.current && gameRef.current.scene) {
+            gameScene = gameRef.current.scene.getScene('SnakeScene') || (gameRef.current.scene.getScenes && gameRef.current.scene.getScenes()[0]);
+          }
           if (attachEvents(gameScene) || scenePollAttempts > 20) {
             clearInterval(interval);
             if (gameScene) {
@@ -165,11 +181,11 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
               queuedSwipes.forEach((d) => { if (d && typeof gameScene.processSimulatedSwipe === 'function') gameScene.processSimulatedSwipe(d); });
               queuedSwipes.length = 0;
               queuedControls.length = 0; queuedDirs.length = 0;
-              // attach cleanup handler ref on scene so tests don't leak
             }
           }
         }, 50);
       } else {
+        // If scene is already available, attach immediately
         attachEvents(gameScene);
         try { console.debug('[PhaserCanvas] Scene immediately available, processing queued events', queuedControls.length, queuedDirs.length); } catch (err) {}
         queuedControls.forEach((d) => {
@@ -181,9 +197,9 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
           if (action === 'stop') gameScene.stopGame();
           if (action === 'setBoardSize') gameScene.setBoardSize(Number(value));
         });
-  queuedDirs.forEach((dir) => gameScene.setDirection(dir));
-  queuedSwipes.forEach((d) => { if (d && typeof gameScene.processSimulatedSwipe === 'function') gameScene.processSimulatedSwipe(d); });
-  queuedSwipes.length = 0;
+        queuedDirs.forEach((dir) => gameScene.setDirection(dir));
+        queuedSwipes.forEach((d) => { if (d && typeof gameScene.processSimulatedSwipe === 'function') gameScene.processSimulatedSwipe(d); });
+        queuedSwipes.length = 0;
         queuedControls.length = 0; queuedDirs.length = 0;
       }
 
@@ -224,7 +240,6 @@ const PhaserCanvas = ({ width = '100%', height = '100%' }) => {
         }
       };
       window.addEventListener('snake-control', onCtl);
-    }
 
     const onResize = () => {
       if (!gameRef.current || !containerRef.current) return;

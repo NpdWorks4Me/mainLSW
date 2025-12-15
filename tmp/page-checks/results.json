@@ -1,0 +1,37 @@
+[
+  {
+    "route": "/",
+    "screenshot": "./tmp/page-checks/_-0.png",
+    "errors": []
+  },
+  {
+    "route": "/store",
+    "screenshot": "./tmp/page-checks/_store-1.png",
+    "errors": []
+  },
+  {
+    "route": "/about",
+    "screenshot": "./tmp/page-checks/_about-2.png",
+    "errors": []
+  },
+  {
+    "route": "/blog",
+    "screenshot": "./tmp/page-checks/_blog-3.png",
+    "errors": []
+  },
+  {
+    "route": "/privacy",
+    "screenshot": "./tmp/page-checks/_privacy-4.png",
+    "errors": []
+  },
+  {
+    "route": "/contact",
+    "screenshot": "./tmp/page-checks/_contact-5.png",
+    "errors": []
+  },
+  {
+    "route": "/login",
+    "screenshot": "./tmp/page-checks/_login-6.png",
+    "errors": []
+  }
+]

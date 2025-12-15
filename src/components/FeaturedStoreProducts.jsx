@@ -53,7 +53,7 @@ const FeaturedProductCard = ({ product, index }) => {
             </div>
           )}
 
-          <div className="relative aspect-square overflow-hidden">
+          <div className="relative overflow-hidden h-48 sm:h-56 md:h-64 lg:h-72">
             <LazyImage 
                 src={product.image} 
                 alt={product.title}

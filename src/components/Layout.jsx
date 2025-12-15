@@ -121,7 +121,7 @@ const MobileMenu = ({ menuItems, isMenuOpen, closeMenu }) => {
   );
 };
 
-const Layout = () => {
+const Layout = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const location = useLocation();
@@ -269,15 +269,19 @@ const Layout = () => {
       <MobileMenu menuItems={menuItems} isMenuOpen={isMenuOpen} closeMenu={closeMenu} />
       <ShoppingCartView isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
 
-      <main className={`flex-grow ${!isHomePage ? 'pt-24' : 'pt-20'}`}>
-        {!isHomePage && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mb-8 relative z-20 pointer-events-none">
-             <div className="pointer-events-auto inline-block">
-                <BackButton />
-             </div>
-          </div>
-        )}
-        <Outlet />
+      <main className={`flex-grow pt-20`}>
+        <AnimatePresence mode="wait">
+          <motion.div key={location.pathname} className="w-full">
+            {!isHomePage && (
+              <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mb-8 relative z-20 pointer-events-none">
+                <div className="pointer-events-auto inline-block">
+                    <BackButton />
+                </div>
+              </div>
+            )}
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
       
       {!isHomePage && <DesktopFooter />}

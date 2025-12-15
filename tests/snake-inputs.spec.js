@@ -3,17 +3,44 @@ import { test, expect } from '@playwright/test';
 test.beforeEach(async ({ page }) => {
   // Opt-in to debug getters before any script runs
   await page.addInitScript(() => { window.__PHASER_DEBUG__ = true; });
+  // Unregister service workers and clear caches early to avoid stale assets
+  await page.addInitScript(() => {
+    try {
+      if (navigator && navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister())).catch(() => {});
+      }
+      if (window.caches && caches.keys) {
+        caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {});
+      }
+    } catch (e) {}
+  });
 });
 
-test('Keyboard: ArrowRight moves snake to right', async ({ page }) => {
-  await page.goto('http://localhost:5000/');
-  await page.click('a[href="/games/snake"]');
+async function openSnake(page, base) {
+  // Directly navigate to the in-page route. The preview server supports SPA fallback
+  // so this should work reliably across environments and avoids depending on a
+  // rendered link on the homepage which may vary by viewport or carousel behavior.
+  await page.goto(base + '/games/snake');
+  await page.waitForLoadState('networkidle');
+}
+
+test('Keyboard: ArrowRight moves snake to right', async ({ page, baseURL }) => {
+  const base = process.env.BASE_URL || baseURL || 'http://localhost:3000';
+  await openSnake(page, base);
   await page.waitForSelector('.phaser-container');
   const canvas = await page.waitForSelector('canvas');
-  // click Start
-  await page.click('button:has-text("Start")');
-  // wait for scene to be available
-  await page.waitForFunction(() => !!(window.getPhaserGame && window.getPhaserGame().scene.getScene && window.getPhaserGame().scene.getScene('SnakeScene')));
+  // click Start if present; the page may auto-start the game in some builds
+  try {
+    const startBtn = await page.$('button:has-text("Start")');
+    if (startBtn) await startBtn.click();
+  } catch (e) { /* ignore - proceed if already running */ }
+  // wait for scene to be available and the snake to be initialized
+  await page.waitForFunction(() => {
+    try {
+      const s = window.getPhaserGame && window.getPhaserGame().scene.getScene && window.getPhaserGame().scene.getScene('SnakeScene');
+      return !!(s && s.started && Array.isArray(s.snake) && s.snake.length > 0);
+    } catch (e) { return false; }
+  });
   const initial = await page.evaluate(() => {
     const s = window.getPhaserGame().scene.getScene('SnakeScene');
     return s.snake[0];
@@ -30,12 +57,20 @@ test('Keyboard: ArrowRight moves snake to right', async ({ page }) => {
   expect(later.x).toBeGreaterThanOrEqual(initial.x + 1);
 });
 
-test('D-Pad: dispatch snake-direction event moves snake', async ({ page }) => {
-  await page.goto('http://localhost:5000/');
-  await page.click('a[href="/games/snake"]');
+test('D-Pad: dispatch snake-direction event moves snake', async ({ page, baseURL }) => {
+  const base = process.env.BASE_URL || baseURL || 'http://localhost:3000';
+  await openSnake(page, base);
   await page.waitForSelector('.phaser-container');
-  await page.click('button:has-text("Start")');
-  await page.waitForFunction(() => !!(window.getPhaserGame && window.getPhaserGame().scene.getScene('SnakeScene')));
+  try {
+    const startBtn = await page.$('button:has-text("Start")');
+    if (startBtn) await startBtn.click();
+  } catch (e) { /* ignore */ }
+  await page.waitForFunction(() => {
+    try {
+      const s = window.getPhaserGame && window.getPhaserGame().scene.getScene && window.getPhaserGame().scene.getScene('SnakeScene');
+      return !!(s && s.started && Array.isArray(s.snake) && s.snake.length > 0);
+    } catch (e) { return false; }
+  });
   const initial = await page.evaluate(() => window.getPhaserGame().scene.getScene('SnakeScene').snake[0]);
   // dispatch right direction
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('snake-direction', { detail: { x: 1, y: 0 } })));
@@ -44,12 +79,20 @@ test('D-Pad: dispatch snake-direction event moves snake', async ({ page }) => {
   expect(later.x).toBeGreaterThanOrEqual(initial.x + 1);
 });
 
-test('Touch swipe: pointerdown + move changes direction', async ({ page }) => {
-  await page.goto('http://localhost:5000/');
-  await page.click('a[href="/games/snake"]');
+test('Touch swipe: pointerdown + move changes direction', async ({ page, baseURL }) => {
+  const base = process.env.BASE_URL || baseURL || 'http://localhost:3000';
+  await openSnake(page, base);
   await page.waitForSelector('.phaser-container');
-  await page.click('button:has-text("Start")');
-  await page.waitForFunction(() => !!(window.getPhaserGame && window.getPhaserGame().scene.getScene('SnakeScene')));
+  try {
+    const startBtn = await page.$('button:has-text("Start")');
+    if (startBtn) await startBtn.click();
+  } catch (e) { /* ignore */ }
+  await page.waitForFunction(() => {
+    try {
+      const s = window.getPhaserGame && window.getPhaserGame().scene.getScene && window.getPhaserGame().scene.getScene('SnakeScene');
+      return !!(s && s.started && Array.isArray(s.snake) && s.snake.length > 0);
+    } catch (e) { return false; }
+  });
   const initial = await page.evaluate(() => window.getPhaserGame().scene.getScene('SnakeScene').snake[0]);
   // simulate pointerdown at center and move right
   const { left, top, width, height } = await page.$eval('.phaser-container', (el) => el.getBoundingClientRect());
@@ -80,10 +123,10 @@ test('Touch swipe: pointerdown + move changes direction', async ({ page }) => {
   expect(later.x).toBeGreaterThanOrEqual(initial.x + 1);
 });
 
-test('Start on load: default enabled', async ({ page }) => {
+test('Start on load: default enabled', async ({ page, baseURL }) => {
   await page.addInitScript(() => { window.__PHASER_DEBUG__ = true; });
-  await page.goto('http://localhost:5000/');
-  await page.click('a[href="/games/snake"]');
+  const base = process.env.BASE_URL || baseURL || 'http://localhost:3000';
+  await openSnake(page, base);
   await page.waitForSelector('.phaser-container');
   // Wait for the scene to exist
   await page.waitForFunction(() => !!(window.getPhaserGame && window.getPhaserGame().scene.getScene('SnakeScene')));

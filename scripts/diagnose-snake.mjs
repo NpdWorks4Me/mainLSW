@@ -6,8 +6,24 @@ async function run() {
   const messages = [];
   page.on('console', msg => messages.push(msg.text()));
   page.on('pageerror', err => messages.push('pageerror:' + err.message));
-  await page.goto('http://localhost:5000/');
-  await page.click('a[href="/games/snake"]');
+  const base = process.env.BASE_URL || 'http://localhost:3000';
+  // Unregister service workers and clear caches to avoid stale assets
+  await page.addInitScript(() => {
+    try {
+      if (navigator && navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister())).catch(() => {});
+      }
+      if (window.caches && caches.keys) {
+        caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {});
+      }
+    } catch (e) {}
+  });
+  await page.goto(base + '/');
+  try {
+    await page.click('a[href="/games/snake"]', { timeout: 2000 });
+  } catch (e) {
+    await page.goto(base + '/games/snake');
+  }
   await page.waitForTimeout(2000);
   // Also test another route to compare behavior (quizzes)
   // Try a few other routes to validate routing

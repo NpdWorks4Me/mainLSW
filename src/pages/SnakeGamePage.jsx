@@ -17,6 +17,15 @@ export default function SnakeGamePage(){
 	const resetGame = () => { sendControl('reset'); setRunning(false); };
 	const setSize = (n) => { setBoardSize(n); sendControl('setBoardSize', n); };
 
+	// Start the game automatically on page load by default. This mirrors the
+	// historic UX where the game begins immediately and allows test harnesses to
+	// assert 'start on load' behavior without requiring a manual click.
+	useEffect(() => {
+		// sendControl will be queued by PhaserCanvas if the scene isn't ready yet
+		startGame();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
 	useEffect(() => { return () => { sendControl('stop'); }; }, []);
 
 	return (

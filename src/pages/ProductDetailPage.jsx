@@ -390,11 +390,11 @@ const ProductDetailPage = () => {
   return <div className="min-h-screen bg-[#0a0a14] text-white font-sans selection:bg-pink-500 selection:text-white pb-24 md:pb-0">
       <PageHelmet title={`${product.title} | Little Space World Shop`} description={seoData?.plainDesc.substring(0, 160)} canonical={`/product/${id}`} keywords={seoData?.enhanced.keywords.join(', ')} />
       
-      <Helmet>
+  <Helmet>
         <script type="application/ld+json">
           {JSON.stringify(seoData?.schema)}
         </script>
-      </Helmet>
+  </Helmet>
       
       <div className="max-w-[1400px] mx-auto pt-6 md:pt-12 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb / Back */}

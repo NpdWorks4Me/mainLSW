@@ -40,7 +40,8 @@
 .stars-small::after, .stars-medium::after, .stars-large::after {
   content: " ";
   position: absolute;
-  top: 2000px;
+  /* keep the pseudo-element inside the viewport to avoid large document extents */
+  top: 100vh;
   width: inherit;
   height: inherit;
   background: inherit;
@@ -48,10 +49,7 @@
 }
 
 @keyframes animStar {
-  from {
-    transform: translateY(0px);
-  }
-  to {
-    transform: translateY(-2000px);
-  }
+  from { transform: translateY(0); }
+  /* translate by the viewport height instead of a large fixed pixel value */
+  to { transform: translateY(-100vh); }
 }

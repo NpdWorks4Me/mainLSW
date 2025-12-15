@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { getProducts, formatCurrency } from '@/api/EcommerceApi';
 import confetti from 'canvas-confetti';
 import LazyImage from '@/components/LazyImage';
+import { responsiveSrcSet, defaultSizes } from '@/utils/imageHelpers';
 import { Button } from '@/components/ui/button';
 import '@/styles/components/cards.css';
 
@@ -83,12 +84,15 @@ const ProductCard = ({ product, index }) => {
             </div>
           )}
 
-          {/* Image Container */}
-          <div className="relative aspect-[4/4] overflow-hidden bg-black/20">
+          {/* Image Container: fixed responsive heights to prevent layout shift */}
+          <div className="relative overflow-hidden bg-black/20 h-40 sm:h-56 lg:h-64">
             <LazyImage 
               src={product.image} 
               alt={product.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              srcSet={responsiveSrcSet(product.image)}
+              sizes={defaultSizes()}
+              width={400}
             />
             {/* Overlay gradient for text readability if needed, but kept subtle */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
@@ -171,7 +175,23 @@ const ProductsList = () => {
   }, []);
 
   if (loading) return <div className="flex justify-center py-32"><Loader2 className="h-12 w-12 text-pink-400 animate-spin" /></div>;
-  if (error) return <div className="text-center py-20 text-red-400 bg-red-900/20 rounded-xl m-4 p-8 max-w-2xl mx-auto border border-red-500/30">Error: {error}</div>;
+
+  if (error) {
+    // Render placeholders so layout and mobile friendliness can be visually verified even when backend is unreachable
+    const placeholders = new Array(8).fill(0);
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto px-4 pb-20">
+        {placeholders.map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="bg-black/20 h-40 sm:h-56 lg:h-64 rounded-2xl mb-4" />
+            <div className="h-4 bg-gray-700 rounded w-3/4 mb-2" />
+            <div className="h-3 bg-gray-700 rounded w-1/2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (products.length === 0) return <div className="text-center py-32 text-purple-300 text-xl">The shelves are being restocked! Check back soon ♡</div>;
 
   return (

@@ -2,8 +2,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from '@/App';
 import '@/index.css';
+import App from '@/App';
 // Consolidated CSS imports so Vite bundles everything and no runtime @import is left in compiled CSS
 import '@/styles/base.css';
 import '@/styles/typography.css';
@@ -40,6 +40,27 @@ ReactDOM.createRoot(rootElement).render(
     </BrowserRouter>
   </>
 );
+
+// Preload important route chunks on idle to improve perceived navigation
+// performance while keeping route components lazy-splittable.
+if (typeof window !== 'undefined') {
+  try {
+    // Use requestIdleCallback when available, otherwise setTimeout.
+    const schedule = window.requestIdleCallback || function (cb) { return setTimeout(cb, 200); };
+    schedule(async () => {
+      try {
+        // Preload the HomePage chunk so the hero and homepage render fast on
+        // first navigation without keeping it in the main bundle.
+        const mod = await import('@/pages/HomePage');
+        // If the module exports default, nothing else is required; this
+        // ensures the chunk is fetched and cached by the browser.
+        void mod;
+      } catch (e) {
+        // Swallow; non-critical
+      }
+    });
+  } catch (e) {}
+}
 
 // Performance Observer
 if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {

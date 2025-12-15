@@ -22,7 +22,8 @@ test.describe('Store smoke tests', () => {
 });
   
 test('store is public storefront (not admin)', async ({ page, baseURL }) => {
-  const target = (baseURL || 'http://localhost:3000') + '/store';
+  const targetBase = process.env.BASE_URL || baseURL || 'http://localhost:3000';
+  const target = targetBase + '/store';
   await page.goto(target);
   // Check the page header has SHOP text
   const header = await page.locator('h1').first().innerText();

@@ -342,7 +342,7 @@ const ActivitiesPage = () => {
         keywords="coloring pages, free printables, adult coloring, age regression, little space, art therapy, free coloring pages for adults and littles, printable coloring pages littlespace, age regression coloring pages, agere printables, free coloring pages no sign up"
       />
 
-      <Helmet>
+  <Helmet>
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="website" />
@@ -367,7 +367,7 @@ const ActivitiesPage = () => {
             }
           })}
         </script>
-      </Helmet>
+  </Helmet>
 
       {/* Fake background layer to cover original nav bar when sticky is active */}
       {isSticky && (

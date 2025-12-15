@@ -1,9 +1,24 @@
 import { test, expect } from '@playwright/test';
 
-test('Snake: container and canvas size', async ({ page }) => {
+test('Snake: container and canvas size', async ({ page, baseURL }) => {
   await page.addInitScript(() => { window.__PHASER_DEBUG__ = true; });
-  await page.goto('http://localhost:5000/');
-  await page.click('a[href="/games/snake"]');
+  // Unregister any service workers and clear caches (tests rely on fresh assets)
+  await page.addInitScript(() => {
+    try {
+      if (navigator && navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister())).catch(() => {});
+      }
+      if (window.caches && caches.keys) {
+        caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {});
+      }
+    } catch (e) {}
+  });
+  const base = process.env.BASE_URL || baseURL || 'http://localhost:3000';
+  // Navigate directly to the Snake route (SPA fallback on preview server
+  // supports direct navigation) which is more reliable than finding the
+  // homepage link that can vary by viewport.
+  await page.goto(base + '/games/snake');
+  await page.waitForLoadState('networkidle');
   await page.waitForSelector('.phaser-container');
   const containerBounds = await page.$eval('.phaser-container', (el) => {
     const r = el.getBoundingClientRect();

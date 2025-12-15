@@ -171,6 +171,10 @@ const blogItems = [
 
 // ———————————————————————— HOMEPAGE ————————————————————————
 const HomePage = () => {
+  React.useEffect(() => {
+    // Debug: confirm HomePage mounts in production preview
+    console.log('HomePage mounted');
+  }, []);
   const [isStoryOpen, setIsStoryOpen] = useState(false);
   const [isTechAdventureOpen, setIsTechAdventureOpen] = useState(false);
   const [isAboutAgeRegressionOpen, setIsAboutAgeRegressionOpen] = useState(false); 
@@ -191,11 +195,7 @@ const HomePage = () => {
         description="Welcome to Little Space World! A safe and cozy community for age regressors and anyone seeking comfort."
       />
 
-      {/* GLOBAL Y2K STYLES */}
-      <style jsx>{`
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-        .pixel-font { font-family: 'VT323', monospace; }
-      `}</style>
+      {/* Pixel font is provided globally via src/index.css (imported in src/main.jsx) */}
 
       {/* SINGLE H1 for SEO */}
       <h1 className="sr-only">Little Space World – Safe Space for Age Regressors</h1>

@@ -153,7 +153,7 @@ const CozyCloudHop = () => {
 
   return (
     <>
-      <Helmet>
+  <Helmet>
         <title>{`${updateTimerDisplay(timeLeft)} - PomoTimer 2K`}</title>
         <link href="https://fonts.googleapis.com/css2?family=VT323:wght@400&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
         <style>{`
@@ -237,7 +237,7 @@ const CozyCloudHop = () => {
             .setting input[type="number"] { width: 100%; }
           }
         `}</style>
-      </Helmet>
+  </Helmet>
       <div className="pomotimer-body">
         <div className="pomotimer-container">
           <header className="pomotimer-header">

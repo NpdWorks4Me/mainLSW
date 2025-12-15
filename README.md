@@ -108,6 +108,12 @@ npm run deploy:hostinger
 
 # Serve public_html locally on :3000
 npm run preview:public
+
+# Serve built `dist/` (production preview with SPA fallback) on :3000
+npm run preview:dist
+
+# Run focused Playwright Smoke tests for homepage and store
+npm run test:smoke:all
 ```
 
 Note: If you are previewing the main site's built `dist` folder and want to test direct navigation to nested routes such as `/games/snake`, run a static server that supports SPA fallback (rewriting unknown routes to `index.html`). `python -m http.server` does not do this and will return 404 for nested routes. Use either `vite preview` or `npx serve -s dist` (or the new `npm run preview:spa`) to validate direct navigation to nested routes.

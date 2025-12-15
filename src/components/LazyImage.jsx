@@ -18,7 +18,7 @@ const ImagePlaceholder = ({ onRetry, variant }) => {
     );
 };
 
-const LazyImage = React.memo(({ src, alt, className, width, height, placeholderVariant = 'pink' }) => {
+const LazyImage = React.memo(({ src, alt, className, width, height, placeholderVariant = 'pink', srcSet, sizes }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasError, setHasError] = useState(false);
     const [shouldLoad, setShouldLoad] = useState(false);
@@ -79,6 +79,8 @@ const LazyImage = React.memo(({ src, alt, className, width, height, placeholderV
                             width={width}
                             height={height}
                             decoding="async"
+                            srcSet={srcSet}
+                            sizes={sizes}
                             onLoad={handleLoad}
                             onError={handleError}
                         />
