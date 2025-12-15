@@ -4,10 +4,12 @@ public_html
 *.log
 coverage/
 playwright-report/
-/.env
+/env
 /.env.local
 /.env.*.local
 *.local
 .idea/
 /.vscode/
 .vercel
+out/
+tmp/out-archive/
