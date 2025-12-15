@@ -11,6 +11,9 @@ on:
       force_ftp:
         description: 'When true, skip SSH and force FTP deploy (useful for testing FTP fallback)'
         required: false
+      host_override:
+        description: 'Optional: override HOSTINGER_SSH_HOST for this run (useful for testing a different host/IP)'
+        required: false
 
 
 jobs:
@@ -73,6 +76,50 @@ jobs:
           echo "use_ssh=$USE_SSH" >> $GITHUB_OUTPUT
           echo "use_ftp=$USE_FTP" >> $GITHUB_OUTPUT
 
+      - name: Pre-deploy: validate SSH host & key (if SSH configured)
+        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        continue-on-error: false
+        run: |
+          set -euo pipefail
+          echo "Validating HOSTINGER_SSH_HOST format and DNS"
+          if printf "%s" "${{ secrets.HOSTINGER_SSH_HOST }}" | grep -qE "^https?://"; then echo "HOST contains protocol (https://) please remove protocol and use host only"; exit 1; fi
+          if printf "%s" "${{ secrets.HOSTINGER_SSH_HOST }}" | grep -qE "^.+/.+"; then echo "HOST contains path info; use host only (no path)"; exit 1; fi
+          if [ -z "${{ secrets.HOSTINGER_SSH_HOST }}" ]; then echo "HOSTINGER_SSH_HOST is missing"; exit 1; fi
+          HOST="${{ secrets.HOSTINGER_SSH_HOST }}"
+          PORT="${{ secrets.HOSTINGER_SSH_PORT || 22 }}"
+          # If host is IP address: check TCP connect. Otherwise check DNS resolution.
+          if printf "%s" "$HOST" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"; then
+            echo "HOST is IP, validating TCP connect to $HOST:$PORT"
+            nc -vz -w 5 "$HOST" "$PORT" || { echo "TCP connection failed"; exit 1; }
+          else
+            if command -v dig >/dev/null 2>&1; then
+              dig +short "$HOST" | sed -n '1p' >/tmp/_dig_addr || true
+              if [ ! -s /tmp/_dig_addr ]; then echo "dig returned no A record for $HOST"; nslookup "$HOST" || { echo "DNS lookup failed (NXDOMAIN) - please verify the host is correct and publicly resolvable"; exit 1; }; fi
+            else
+              nslookup "$HOST" || { echo "DNS lookup failed (NXDOMAIN) - please verify the host is correct and publicly resolvable"; exit 1; }
+            fi
+          fi
+          echo "Validating PRIVATE KEY format"
+          if [ -z "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" ]; then echo "HOSTINGER_SSH_PRIVATE_KEY missing"; exit 1; fi
+          printf "%s" "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" > /tmp/hostinger_key
+          chmod 600 /tmp/hostinger_key
+          # Try parse first
+          if ssh-keygen -y -f /tmp/hostinger_key >/tmp/_hostinger_pub 2>/tmp/_host_err; then
+            echo "Private key is parseable"
+          else
+            echo "ssh-keygen parse failed (trying PEM conversion)"
+            if ssh-keygen -p -m PEM -N "" -f /tmp/hostinger_key >/dev/null 2>&1; then
+              echo "Converted key to PEM format; re-checking parse"
+              if ssh-keygen -y -f /tmp/hostinger_key >/tmp/_hostinger_pub 2>/tmp/_host_err; then
+                echo "Private key parse succeeded after conversion"
+              else
+                echo "Private key parse failed after conversion; ssh-keygen error:"; sed -n '1,200p' /tmp/_host_err; exit 1
+              fi
+            else
+              echo "Key conversion to PEM failed or was unnecessary; ssh-keygen error:"; sed -n '1,200p' /tmp/_host_err || true; exit 1
+            fi
+          fi
+
       - name: Show selected deploy method
         run: |
           echo "use_ssh=${{ steps.prepare.outputs.use_ssh }}"
@@ -117,18 +164,18 @@ jobs:
           echo "---- SSH test output ----"
           sed -n '1,200p' /tmp/ssh_test || true
 
-      - name: Rsync to Hostinger via SSH (dry-run)
+      - name: Upload to Hostinger via SFTP (appleboy scp)
         if: ${{ steps.ssh_test.outputs.ssh_ok == 'true' }}
         continue-on-error: true
-        run: |
-          echo "Performing dry-run rsync to detect connectivity (no changes will be made)"
-          rsync -avz --dry-run -e "ssh -i /tmp/hostinger_key -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}" || true
-      - name: Rsync to Hostinger via SSH (live)
-        if: ${{ steps.ssh_test.outputs.ssh_ok == 'true' }}
-        continue-on-error: true
-        run: |
-          echo "Uploading dist/ -> ${HOSTINGER_TARGET_DIR_MAIN} on ${HOSTINGER_SSH_HOST}"
-          rsync -avz --delete --omit-dir-times --no-perms -e "ssh -i /tmp/hostinger_key -o StrictHostKeyChecking=no -p ${HOSTINGER_SSH_PORT:-22}" dist/ "${{ secrets.HOSTINGER_SSH_USERNAME }}@${{ secrets.HOSTINGER_SSH_HOST }}:${HOSTINGER_TARGET_DIR_MAIN}"
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_SSH_HOST }}
+          username: ${{ secrets.HOSTINGER_SSH_USERNAME }}
+          key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+          source: "dist/"
+          target: "${{ env.HOSTINGER_TARGET_DIR_MAIN }}"
+          strip_components: 1
 
       - name: DNS/host resolution diagnostics
         continue-on-error: true
