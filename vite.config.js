@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	// Use relative base so built asset links are relative paths (important for shared hosting)
+	base: './',
 	plugins: [
 		react(),
 		VitePWA({
@@ -15,8 +17,8 @@ export default defineConfig({
 				description: 'A Safe Place for LittleSpace',
 				theme_color: '#0d1a3e',
 				icons: [
-					{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-					{ src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+					{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+					{ src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
 				],
 			},
 		}),
@@ -28,9 +30,7 @@ export default defineConfig({
 		},
 		allowedHosts: true,
 	},
- 	build: {
- 		sourcemap: 'inline',
- 	},
+
 	resolve: {
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json', ],
 		alias: {
@@ -38,6 +38,7 @@ export default defineConfig({
 		},
 	},
 	build: {
+		sourcemap: 'inline',
 		rollupOptions: {
 			external: [
 				'@babel/parser',
