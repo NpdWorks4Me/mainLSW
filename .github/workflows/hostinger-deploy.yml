@@ -15,7 +15,6 @@ on:
         description: 'Optional: override HOSTINGER_SSH_HOST for this run (useful for testing a different host/IP)'
         required: false
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -76,8 +75,8 @@ jobs:
           echo "use_ssh=$USE_SSH" >> $GITHUB_OUTPUT
           echo "use_ftp=$USE_FTP" >> $GITHUB_OUTPUT
 
-      - name: Pre-deploy: validate SSH host & key (if SSH configured)
-        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+      - name: Pre-deploy validate SSH host and key (if SSH configured)
+        if: steps.prepare.outputs.use_ssh == 'true'
         continue-on-error: false
         run: |
           set -euo pipefail
@@ -86,7 +85,7 @@ jobs:
           if printf "%s" "${{ secrets.HOSTINGER_SSH_HOST }}" | grep -qE "^.+/.+"; then echo "HOST contains path info; use host only (no path)"; exit 1; fi
           if [ -z "${{ secrets.HOSTINGER_SSH_HOST }}" ]; then echo "HOSTINGER_SSH_HOST is missing"; exit 1; fi
           HOST="${{ secrets.HOSTINGER_SSH_HOST }}"
-          PORT="${{ secrets.HOSTINGER_SSH_PORT || 22 }}"
+          PORT="${HOSTINGER_SSH_PORT:-22}"
           # If host is IP address: check TCP connect. Otherwise check DNS resolution.
           if printf "%s" "$HOST" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"; then
             echo "HOST is IP, validating TCP connect to $HOST:$PORT"
@@ -127,13 +126,13 @@ jobs:
           echo "target_dir=${{ steps.prepare.outputs.target_dir }}"
 
       - name: Fail if no deploy method configured
-        if: ${{ steps.prepare.outputs.use_ssh == 'false' && steps.prepare.outputs.use_ftp == 'false' }}
+        if: steps.prepare.outputs.use_ssh == 'false' && steps.prepare.outputs.use_ftp == 'false'
         run: |
           echo "No deploy method configured: neither SSH nor FTP secrets were detected. Add secrets to enable deployment." >&2
           exit 1
 
       - name: Deploy via SSH (if HOSTINGER_SSH_PRIVATE_KEY is provided)
-        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        if: steps.prepare.outputs.use_ssh == 'true'
         continue-on-error: true
         run: |
           echo "Preparing SSH private key file for rsync"
@@ -149,7 +148,7 @@ jobs:
 
       - name: Test SSH connectivity (diagnostic)
         id: ssh_test
-        if: ${{ steps.prepare.outputs.use_ssh == 'true' }}
+        if: steps.prepare.outputs.use_ssh == 'true'
         continue-on-error: true
         run: |
           echo "Testing SSH connectivity to ${HOSTINGER_SSH_HOST} (user: ${HOSTINGER_SSH_USERNAME})"
@@ -165,14 +164,14 @@ jobs:
           sed -n '1,200p' /tmp/ssh_test || true
 
       - name: Upload to Hostinger via SFTP (appleboy scp)
-        if: ${{ steps.ssh_test.outputs.ssh_ok == 'true' }}
+        if: steps.ssh_test.outputs.ssh_ok == 'true'
         continue-on-error: true
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOSTINGER_SSH_HOST }}
           username: ${{ secrets.HOSTINGER_SSH_USERNAME }}
           key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+          port: ${{ env.HOSTINGER_SSH_PORT }}
           source: "dist/"
           target: "${{ env.HOSTINGER_TARGET_DIR_MAIN }}"
           strip_components: 1
@@ -186,7 +185,7 @@ jobs:
           nslookup "${{ secrets.HOSTINGER_FTP_HOST }}" || true
 
       - name: Deploy via FTP (fallback)
-        if: ${{ steps.prepare.outputs.use_ftp == 'true' }}
+        if: steps.prepare.outputs.use_ftp == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.2.0
         with:
           server: ${{ secrets.HOSTINGER_FTP_HOST }}
