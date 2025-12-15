@@ -54,12 +54,16 @@ jobs:
             USE_SSH=false
             USE_FTP=true
           fi
-          # Detect SSH secrets presence
-          if [ -n "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" ] && [ -n "${{ secrets.HOSTINGER_SSH_HOST }}" ] && [ -n "${{ secrets.HOSTINGER_SSH_USERNAME }}" ]; then
+          # Detect SSH secrets presence (skip if FORCE_FTP is set)
+          if [ "${FORCE_FTP:-false}" != "true" ] && [ -n "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" ] && [ -n "${{ secrets.HOSTINGER_SSH_HOST }}" ] && [ -n "${{ secrets.HOSTINGER_SSH_USERNAME }}" ]; then
             USE_SSH=true
             echo "Detected SSH deploy configuration"
           else
-            echo "SSH deploy configuration not fully provided (HOSTINGER_SSH_PRIVATE_KEY/HOSTINGER_SSH_HOST/HOSTINGER_SSH_USERNAME)"
+            if [ "${FORCE_FTP:-false}" = "true" ]; then
+              echo "Skipping SSH detection because FORCE_FTP is true"
+            else
+              echo "SSH deploy configuration not fully provided (HOSTINGER_SSH_PRIVATE_KEY/HOSTINGER_SSH_HOST/HOSTINGER_SSH_USERNAME)"
+            fi
           fi
           # Detect FTP secrets presence
           if [ -n "${{ secrets.HOSTINGER_FTP_HOST }}" ] && [ -n "${{ secrets.HOSTINGER_FTP_USERNAME }}" ] && [ -n "${{ secrets.HOSTINGER_FTP_PASSWORD }}" ]; then
@@ -86,6 +90,20 @@ jobs:
           if [ -z "${{ secrets.HOSTINGER_SSH_HOST }}" ]; then echo "HOSTINGER_SSH_HOST is missing"; exit 1; fi
           HOST="${{ secrets.HOSTINGER_SSH_HOST }}"
           PORT="${HOSTINGER_SSH_PORT:-22}"
+          # Allow shorthand in HOSTINGER_SSH_HOST like host:port (e.g. 1.2.3.4:65002)
+          if printf "%s" "$HOST" | grep -qE "^[^:]+:[0-9]+$"; then
+            PART_HOST="$(printf "%s" "$HOST" | cut -d ':' -f1)"
+            PART_PORT="$(printf "%s" "$HOST" | cut -d ':' -f2)"
+            HOST="$PART_HOST"
+            PORT="$PART_PORT"
+            echo "Parsed host:port shorthand, host=$HOST port=$PORT"
+          fi
+          # Allow explicit HOSTINGER_SSH_PORT secret to override parsed port; default to 22 otherwise
+          PORT="${HOSTINGER_SSH_PORT:-${PORT:-22}}"
+          echo "Using SSH host=$HOST port=$PORT"
+          # Export chosen host/port so subsequent steps use the final values
+          echo "HOSTINGER_SSH_HOST=$HOST" >> $GITHUB_ENV
+          echo "HOSTINGER_SSH_PORT=$PORT" >> $GITHUB_ENV
           # If host is IP address: check TCP connect. Otherwise check DNS resolution.
           if printf "%s" "$HOST" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"; then
             echo "HOST is IP, validating TCP connect to $HOST:$PORT"
@@ -102,6 +120,16 @@ jobs:
           if [ -z "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" ]; then echo "HOSTINGER_SSH_PRIVATE_KEY missing"; exit 1; fi
           printf "%s" "${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}" > /tmp/hostinger_key
           chmod 600 /tmp/hostinger_key
+          echo "Private key first lines (redacted) for diagnostics:" || true
+          # show header lines to help identify format (don't print full key)
+          sed -n '1,5p' /tmp/hostinger_key | sed 's/.*/[REDACTED]/g' || true
+          # Detect PuTTY .ppk keys or other unsupported formats and provide guidance
+          if grep -q "PuTTY-User-Key-File" /tmp/hostinger_key >/dev/null 2>&1; then
+            echo "Detected a PuTTY .ppk private key. Convert it to OpenSSH format locally before storing as a secret:";
+            echo "  puttygen yourkey.ppk -O private-openssh -o id_hostinger && sed -n '1,5p' id_hostinger";
+            echo "Or use PuTTYgen on Windows to export OpenSSH private key. The key in the secret must be an OpenSSH-compatible PEM/private key without a passphrase.";
+            exit 1;
+          fi
           # Try parse first
           if ssh-keygen -y -f /tmp/hostinger_key >/tmp/_hostinger_pub 2>/tmp/_host_err; then
             echo "Private key is parseable"
