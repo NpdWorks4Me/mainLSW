@@ -39,7 +39,7 @@
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
-    "react-helmet-async": "file:../../../../../../private/tmp/react-helmet-async",
+  "react-helmet-async": "^2.0.0",
     "react-icons": "^5.4.0",
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.16.0",
