@@ -12,36 +12,45 @@ if [ ! -f "$HTML" ]; then
   exit 2
 fi
 
-ASSETS=$(grep -Eo 'src="(/[^"]+)"|href="(/[^"]+)"' "$HTML" | sed -E 's/^(src|href)="([^"]+)"$/\2/' | sort -u)
+ASSETS=$(grep -Eo 'src="([^"]+)"|href="([^"]+)"' "$HTML" | sed -E 's/^(src|href)="([^"]+)"$/\2/' | sort -u)
 
 if [ -z "$ASSETS" ]; then
-  echo "No local assets referenced by dist/index.html" >&2
+  echo "No asset references found in dist/index.html" >&2
   exit 1
 fi
 
 echo "Checking assets referenced in dist/index.html"
 MISSING=0
 while read -r p; do
-  case "$p" in
-    /*)
-      # Skip dev-time source references like /src/... which are not expected in dist
-      if [[ "$p" == /src/* ]]; then
-        echo "Skipping dev reference: $p"
-        continue
-      fi
-      # Map absolute URL paths to files under dist/ when verifying local build.
-      localpath="$ROOT/dist${p}"
-      if [ ! -f "$localpath" ]; then
-        echo "MISSING: $p (expected $localpath)" >&2
-        MISSING=1
-      else
-        echo "OK:     $p"
-      fi
-      ;;
-    *)
-      echo "Skipping non-local asset: $p"
-      ;;
-  esac
+  # Skip obvious external or data URLs
+  if printf "%s" "$p" | grep -qE '^(https?:|//|data:|mailto:|tel:)'; then
+    echo "Skipping external or data URL: $p"
+    continue
+  fi
+
+  # Normalize path to a local file under dist/
+  if [[ "$p" == /* ]]; then
+    # Absolute path appended to dist root
+    # Skip dev-time source references like /src/...
+    if [[ "$p" == /src/* ]]; then
+      echo "Skipping dev reference: $p"
+      continue
+    fi
+    localpath="$ROOT/dist${p}"
+  else
+    # Relative paths (./assets/... or assets/...) should map to dist/
+    # Remove leading ./ if present
+    cleanp="$p"
+    cleanp="${cleanp#./}"
+    localpath="$ROOT/dist/$cleanp"
+  fi
+
+  if [ ! -f "$localpath" ]; then
+    echo "MISSING: $p (expected $localpath)" >&2
+    MISSING=1
+  else
+    echo "OK:     $p -> $localpath"
+  fi
 done <<< "$ASSETS"
 
 if [ "$MISSING" -ne 0 ]; then

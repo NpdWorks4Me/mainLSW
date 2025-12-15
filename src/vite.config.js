@@ -5,7 +5,8 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/',
+  // Use a relative base so built asset links are relative paths (important for shared hosting)
+  base: './',
   publicDir: '../public',
   server: {
     port: 3000,
