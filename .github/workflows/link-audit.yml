@@ -26,4 +26,21 @@ jobs:
         run: npm ci
 
       - name: Run link audit
-        run: npm run audit:links
+        id: audit
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          echo "Running link audit..."
+          if npm run audit:links 2>&1 | tee link-audit.log; then
+            echo "result=success" >> $GITHUB_OUTPUT
+          else
+            echo "result=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post link audit report as PR comment (on failure)
+        if: ${{ steps.audit.outputs.result == 'failure' && github.event_name == 'pull_request' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: link-audit.log
