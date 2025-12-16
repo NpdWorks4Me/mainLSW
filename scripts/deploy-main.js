@@ -57,7 +57,7 @@ Header set X-Content-Type-Options "nosniff"
 Header set Referrer-Policy "no-referrer-when-downgrade"
 DirectoryIndex index.html
 Require all granted
-Header set Content-Security-Policy "default-src 'none'; script-src 'self'; connect-src ${cspConnect}; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'none'; object-src 'none'"
+Header set Content-Security-Policy "default-src 'none'; script-src 'self'; connect-src ${cspConnect}; img-src 'self' data: https://twzknjvtwbxtedklclht.supabase.co https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' data: https://fonts.gstatic.com; frame-src 'none'; object-src 'none'"
 `;
 fs.writeFileSync(path.join(publicHtml, '.htaccess'), htaccess);
 

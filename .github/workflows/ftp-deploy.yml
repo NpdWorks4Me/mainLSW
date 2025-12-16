@@ -1,0 +1,49 @@
+name: Build and Deploy via FTP
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Prepare public_html (deploy copy)
+        run: |
+          node ./scripts/deploy-main.js
+
+      - name: Validate FTP secrets
+        run: |
+          if [ -z "${{ secrets.FTP_HOST }}" ] || [ -z "${{ secrets.FTP_USER }}" ] || [ -z "${{ secrets.FTP_PASS }}" ]; then
+            echo "Missing required FTP secrets (FTP_HOST, FTP_USER, FTP_PASS)."; exit 1;
+          fi
+
+      - name: Deploy to FTP server
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./public_html
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+
+      - name: Success message
+        run: echo "Deploy finished."
