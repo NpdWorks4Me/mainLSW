@@ -47,6 +47,7 @@ const BlogPostTherapeuticAgeRegression = lazy(() => import('@/pages/BlogPostTher
 const BlogPostAgeVsPetRegression = lazy(() => import('@/pages/BlogPostAgeVsPetRegression'));
 const BlogPostInnerChildJournaling = lazy(() => import('@/pages/BlogPostInnerChildJournaling'));
 const BlogPostAgeRegression = lazy(() => import('@/pages/BlogPostAgeRegression'));
+const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
 
 const ActivitiesPage = lazy(() => import('@/pages/ActivitiesPage'));
 const GamesPage = lazy(() => import('@/pages/GamesPage'));
@@ -212,6 +213,8 @@ function App() {
                               <Route path="quizzes/super-you" element={<RouteWrapper><SuperYouQuizPage /></RouteWrapper>} />
                               <Route path="quizzes/comfort-functions" element={<RouteWrapper><ComfortFunctionsQuizPage /></RouteWrapper>} />
                               <Route path="self-help" element={<RouteWrapper><SelfHelpPage /></RouteWrapper>} />
+                              {/* Dynamic blog post route: /:pillarSlug/:postSlug */}
+                              <Route path=":pillarSlug/:postSlug" element={<RouteWrapper><BlogPostPage /></RouteWrapper>} />
                               <Route path="safety" element={<RouteWrapper><SafetyPage /></RouteWrapper>} />
                               <Route path="advice" element={<RouteWrapper><AdvicePage /></RouteWrapper>} />
                               <Route path="community-qa" element={<RouteWrapper><QAPage /></RouteWrapper>} />
