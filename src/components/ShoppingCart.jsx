@@ -55,7 +55,7 @@ const ShoppingCartView = ({ isCartOpen, setIsCartOpen }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 z-[100]"
+          className={`fixed inset-0 bg-black/60 ${isCartOpen ? 'z-[100] pointer-events-auto' : 'z-10 pointer-events-none'}`}
           onClick={() => setIsCartOpen(false)}
         >
           <motion.div

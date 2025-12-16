@@ -437,7 +437,7 @@ const GalacticHeroSection = () => {
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            className={`fixed inset-0 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm ${isModalOpen ? 'z-50 pointer-events-auto' : 'z-10 pointer-events-none'}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

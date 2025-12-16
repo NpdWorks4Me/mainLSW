@@ -78,14 +78,14 @@ const MobileMenu = ({ menuItems, isMenuOpen, closeMenu }) => {
       {isMenuOpen && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            className={`fixed inset-0 bg-black/50 backdrop-blur-sm ${isMenuOpen ? 'z-40 pointer-events-auto' : 'z-10 pointer-events-none'}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeMenu}
           />
           <motion.div
-            className="fixed top-0 left-0 h-full w-72 z-50"
+            className={`fixed top-0 left-0 h-full w-72 ${isMenuOpen ? 'z-50 pointer-events-auto' : 'z-20 pointer-events-none'}`}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
