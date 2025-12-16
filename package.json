@@ -26,6 +26,7 @@
     "start": "npm run start:main",
     "verify:local": "./scripts/verify-local-assets.sh http://localhost:3000",
     "verify:deploy": "./scripts/verify-hosting-deploy.sh",
+    "audit:links": "node ./scripts/link-audit.cjs",
     "deploy:hostinger": "npm run build && node ./scripts/redeploy-main.js && bash ./scripts/verify-public-html-assets.sh",
     "verify:console": "node ./scripts/playwright-check-store.js http://localhost:3000/store/",
   "preview": "npm run preview:client",

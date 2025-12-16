@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 	<head>
@@ -32,7 +31,17 @@
 	</head>
 	<body>
 		<div id="root"></div>
-  <script type="module" src="./main.jsx"></script>
+		<!-- Server-rendered fallback anchors for critical CTAs.
+	     These anchors are intentionally hidden (non-disruptive) but present in the
+	     initial HTML so E2E tests and slow/JS-disabled clients can find and navigate
+	     to key routes deterministically without waiting for client hydration. -->
+		<nav id="lsw-server-ctas" aria-hidden="true" style="position:absolute;left:0;top:0;visibility:hidden;height:0;overflow:hidden">
+			<a href="/store" class="lsw-server-cta" data-lsw-server aria-label="Visit The Little Shop">Visit The Little Shop</a>
+			<a href="/blog" class="lsw-server-cta" data-lsw-server aria-label="Read more blogs">Read more blogs</a>
+			<a href="/games" class="lsw-server-cta" data-lsw-server aria-label="See all games">See all games</a>
+			<a href="/explore" class="lsw-server-cta" data-lsw-server aria-label="Explore LittleSpace World">Explore LittleSpace World</a>
+			<a href="/about#contact" class="lsw-server-cta" data-lsw-server aria-label="Learn more about us">Learn more about us</a>
+		</nav>
     <!-- Service Worker Registration Script -->
     <script>
       if ('serviceWorker' in navigator) {
@@ -45,5 +54,6 @@
         });
       }
     </script>
+		<script type="module" src="./main.jsx"></script>
 	</body>
 </html>

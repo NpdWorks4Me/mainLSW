@@ -21,24 +21,11 @@ This repository contains TWO separate applications:
 
 ---
 
-## 2. Admin Dashboard (Next.js)
-**Location:** `app/`  
-**Domain:** `admin.littlespaceworld.com`  
-**Host:** Vercel
+## Admin Dashboard (removed)
 
-### Vercel Configuration
-- **Project:** `testlsw` 
-- **Team:** `js-projects-1788e21a`
-- **Framework:** Next.js (auto-detected)
-- **Build Command:** `next build` (default)
-- **Root Directory:** `.` (repository root)
-- **Git Branch:** `main`
+The Admin Dashboard (historically a Next.js app deployed to Vercel) has been removed from this repository. If you need an admin UI in the future, create a dedicated repository (or a separate project) and deploy it independently (Hostinger or a platform of your choice).
 
-### How it works:
-1. Push to GitHub `main` branch (testlsw repository)
-2. Vercel automatically builds the Next.js app from `app/` directory
-3. Deploys as dynamic Next.js site
-4. Accessible at `testlsw.vercel.app` or custom domain `admin.littlespaceworld.com`
+> Historical material about deploying the Admin to Vercel has been archived. See `docs/vercel-deploy.md` (DEPRECATED) if you need to reference the old flow.
 
 ---
 

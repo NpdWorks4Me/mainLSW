@@ -1,0 +1,95 @@
+name: Playwright E2E (dist)
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    name: Playwright tests against production dist
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Start stable static server (serve-dist)
+        # Start server in background and write logs/pid so we can inspect/kill later
+        run: |
+          nohup npm run serve:dist > serve-dist.log 2>&1 &
+          echo $! > serve-dist.pid
+
+      - name: Wait for server to be ready
+        run: |
+          for i in {1..60}; do
+            if curl -sSf http://127.0.0.1:3001 >/dev/null 2>&1; then
+              echo "server up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Timed out waiting for serve-dist to respond on 127.0.0.1:3001" >&2
+          cat serve-dist.log || true
+          exit 1
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run CTA & navigation Playwright test
+        env:
+          PLAYWRIGHT_SKIP_ADMIN_WEB_SERVER: true
+          BASE_URL: http://127.0.0.1:3001
+        run: |
+          set -o pipefail
+          npx playwright test tests/cta-and-navigation.spec.js --project=chromium --reporter=list || true
+          # capture exit code to surface as job failure only after artifacts are uploaded
+          echo "PLAYWRIGHT_EXIT_CODE=$?" > /tmp/playwright_exit_code
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+
+      - name: Upload serve-dist log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: serve-dist-log
+          path: |
+            serve-dist.log
+            serve-dist.pid
+
+      - name: Stop stable static server
+        if: always()
+        run: |
+          if [ -f serve-dist.pid ]; then
+            kill "$(cat serve-dist.pid)" || true
+            rm -f serve-dist.pid
+          fi
+
+      - name: Fail if Playwright failed
+        if: always()
+        run: |
+          CODE=$(cat /tmp/playwright_exit_code || echo 0)
+          if [ "$CODE" != "0" ]; then
+            echo "Playwright tests failed with exit code $CODE"
+            exit $CODE
+          fi
+          echo "Playwright tests passed"

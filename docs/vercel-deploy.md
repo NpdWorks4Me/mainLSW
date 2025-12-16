@@ -1,4 +1,16 @@
-Vercel deployment runbook
+# DEPRECATED: Vercel deployment runbook
+
+> NOTE: Vercel deployments and related CI workflows have been deprecated for this repository and archived to `.github/disabled-workflows/`.
+> The site is now deployed to Hostinger (see `HOSTINGER_DEPLOY.md`) and the Admin (Next.js) app was removed from this repo.
+
+This doc is retained for historical reference only. If you must re-enable or reconfigure Vercel deploys in the future, review the archived workflows in `.github/disabled-workflows/` and proceed cautiously.
+
+---
+
+Status
+------
+
+- **Status:** Vercel CI deprecated and archived. Prefer the Hostinger-based deploy flow described in `HOSTINGER_DEPLOY.md`.
 
 Purpose
 

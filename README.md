@@ -29,9 +29,11 @@ git push -u origin main
 
 If you prefer Hostinger to build directly from GitHub (recommended), choose the 'Connect Git' workflow in Hostinger's panel and set the Build command (the default recommended below). Hostinger will automatically build and publish on push.
 
-Vercel deployments
-------------------
-This repository also contains GitHub Actions workflows to deploy to Vercel. See `docs/vercel-deploy.md` for details on the Vercel Action, required secrets, and SSO/bypass-token configuration.
+## Deployments (Hostinger preferred)
+
+This project now uses Hostinger shared hosting as the canonical production target. The automated CI deploy flow uploads `dist/` to the Hostinger `public_html` document root and verifies asset availability with `scripts/verify-hosting-deploy.sh`.
+
+> NOTE: Previous references to Vercel and Next.js deployments have been archived. See `docs/vercel-deploy.md` (DEPRECATED) for historical context. For active deploy instructions, see `HOSTINGER_DEPLOY.md`.
 
 Hostinger Build (direct Git):
  - Build command: npm install && npm run build

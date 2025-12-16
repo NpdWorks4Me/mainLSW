@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+/* eslint-env node */
 /*
  Generates SITE_MAP.md by scanning:
-  - Next.js App Router files under app/
-  - Next.js API routes under app/api/
+  - App Router files under app/ (legacy Next.js App Router if present)
+  - App API routes under app/api/
   - Vite/React route definitions under src/ (searches for <Route path= or path: patterns)
 
  Usage: node scripts/generate-site-map.js
@@ -116,7 +117,7 @@ function generateSiteMap() {
   const apiRoutes = collectAppApiRoutes();
   const srcRoutes = collectSrcRoutes();
 
-  let md = `# SITE_MAP\n\nGenerated: ${new Date().toISOString()}\n\n## Next.js App Router (app/)\n\n`;
+  let md = `# SITE_MAP\n\nGenerated: ${new Date().toISOString()}\n\n## App Router (app/) — (legacy Next.js App Router if present)\n\n`;
   if (appRoutes.length === 0) md += '_No app/ routes detected._\n\n';
   else {
     appRoutes.sort((a,b)=>a.route.localeCompare(b.route));
@@ -124,7 +125,7 @@ function generateSiteMap() {
     md += '\n';
   }
 
-  md += '## Next.js API Routes (app/api/)\n\n';
+  md += '## App API Routes (app/api/)\n\n';
   if (apiRoutes.length === 0) md += '_No API routes detected._\n\n';
   else {
     apiRoutes.sort((a,b)=>a.route.localeCompare(b.route));

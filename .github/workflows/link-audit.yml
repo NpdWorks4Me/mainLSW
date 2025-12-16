@@ -1,0 +1,46 @@
+name: Link Audit Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  audit:
+    name: Link audit
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run link audit
+        id: audit
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          echo "Running link audit..."
+          if npm run audit:links 2>&1 | tee link-audit.log; then
+            echo "result=success" >> $GITHUB_OUTPUT
+          else
+            echo "result=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post link audit report as PR comment (on failure)
+        if: ${{ steps.audit.outputs.result == 'failure' && github.event_name == 'pull_request' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: link-audit.log

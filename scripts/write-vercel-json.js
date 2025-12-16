@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+/* eslint-env node */
+// DEPRECATED: legacy helper for Vercel deployments. Kept for historical reference only.
+// Modern deployments use the Hostinger workflow; do not rely on Vercel automation.
+
 import fs from 'fs';
 import path from 'path';
 

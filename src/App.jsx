@@ -47,8 +47,10 @@ const BlogPostTherapeuticAgeRegression = lazy(() => import('@/pages/BlogPostTher
 const BlogPostAgeVsPetRegression = lazy(() => import('@/pages/BlogPostAgeVsPetRegression'));
 const BlogPostInnerChildJournaling = lazy(() => import('@/pages/BlogPostInnerChildJournaling'));
 const BlogPostAgeRegression = lazy(() => import('@/pages/BlogPostAgeRegression'));
+const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
 
 const ActivitiesPage = lazy(() => import('@/pages/ActivitiesPage'));
+const GamesPage = lazy(() => import('@/pages/GamesPage'));
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/TermsPage'));
 const CookiePolicyPage = lazy(() => import('@/pages/CookiePolicyPage'));
@@ -77,6 +79,14 @@ const AdvicePage = lazy(() => import('@/pages/AdvicePage'));
 const QAPage = lazy(() => import('@/pages/QAPage'));
 // Admin UI has been removed from this repository — route disabled to avoid importing admin-only bundles.
 const SnakeGamePage = lazy(() => import('@/pages/SnakeGamePage'));
+const WordSearchGamePage = lazy(() => import('@/pages/WordSearchGamePage'));
+const TicTacToeGamePage = lazy(() => import('@/pages/TicTacToeGamePage'));
+const ColorSequenceGamePage = lazy(() => import('@/pages/ColorSequenceGamePage'));
+const MemoryGamePage = lazy(() => import('@/pages/MemoryGamePage'));
+const NeonMinesweeperGamePage = lazy(() => import('@/pages/NeonMinesweeperGamePage'));
+const ColorMatchGamePage = lazy(() => import('@/pages/ColorMatchGamePage'));
+const GalleryPage = lazy(() => import('@/pages/GalleryPage'));
+const UserProfilePage = lazy(() => import('@/pages/UserProfilePage'));
 
 const RouteWrapper = ({ children }) => {
   const location = useLocation();
@@ -169,7 +179,17 @@ function App() {
                               {/* Other Routes */}
                               <Route path="coloring-pages" element={<RouteWrapper><ActivitiesPage /></RouteWrapper>} />
                               {/* Games */}
+                              <Route path="games" element={<RouteWrapper><GamesPage /></RouteWrapper>} />
+                              <Route path="games/wordsearch" element={<RouteWrapper><WordSearchGamePage /></RouteWrapper>} />
+                              <Route path="games/tictactoe" element={<RouteWrapper><TicTacToeGamePage /></RouteWrapper>} />
+                              <Route path="games/colorsequence" element={<RouteWrapper><ColorSequenceGamePage /></RouteWrapper>} />
+                              <Route path="games/memory" element={<RouteWrapper><MemoryGamePage /></RouteWrapper>} />
+                              <Route path="games/neonminesweeper" element={<RouteWrapper><NeonMinesweeperGamePage /></RouteWrapper>} />
+                              <Route path="games/colormatch" element={<RouteWrapper><ColorMatchGamePage /></RouteWrapper>} />
                               <Route path="games/snake" element={<RouteWrapper><SnakeGamePage /></RouteWrapper>} />
+                              {/* Gallery & Public User Profiles */}
+                              <Route path="gallery" element={<RouteWrapper><GalleryPage /></RouteWrapper>} />
+                              <Route path="user/:nickname" element={<RouteWrapper><UserProfilePage /></RouteWrapper>} />
                               <Route path="guidance-and-support" element={<RouteWrapper><GuidanceAndSupportPage /></RouteWrapper>} />
                               <Route path="about" element={<RouteWrapper><AboutPage /></RouteWrapper>} />
                               <Route path="privacy" element={<RouteWrapper><PrivacyPage /></RouteWrapper>} />
@@ -193,6 +213,8 @@ function App() {
                               <Route path="quizzes/super-you" element={<RouteWrapper><SuperYouQuizPage /></RouteWrapper>} />
                               <Route path="quizzes/comfort-functions" element={<RouteWrapper><ComfortFunctionsQuizPage /></RouteWrapper>} />
                               <Route path="self-help" element={<RouteWrapper><SelfHelpPage /></RouteWrapper>} />
+                              {/* Dynamic blog post route: /:pillarSlug/:postSlug */}
+                              <Route path=":pillarSlug/:postSlug" element={<RouteWrapper><BlogPostPage /></RouteWrapper>} />
                               <Route path="safety" element={<RouteWrapper><SafetyPage /></RouteWrapper>} />
                               <Route path="advice" element={<RouteWrapper><AdvicePage /></RouteWrapper>} />
                               <Route path="community-qa" element={<RouteWrapper><QAPage /></RouteWrapper>} />

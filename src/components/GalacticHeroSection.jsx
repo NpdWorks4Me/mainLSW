@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -215,18 +215,18 @@ const GalacticHeroSection = () => {
         {/* LEFT COLUMN (Desktop) / TOP (Mobile) - Text & CTAs */}
         <motion.div 
           className="relative z-20 w-full md:w-[45%] flex flex-col items-center md:items-start justify-start md:justify-center p-4 md:p-8 order-1 md:order-1 text-center md:text-left md:h-auto pointer-events-none md:pointer-events-auto"
-          initial={{ opacity: 0, x: -50 }}
+          initial={false}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
         >
           
           {/* Tagline */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mb-8 md:mb-4"
-          >
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mb-8 md:mb-4"
+           >
             <span className="inline-block py-1 px-3 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-cyan-300 font-mono tracking-widest text-xs md:text-sm uppercase shadow-[0_0_10px_rgba(0,255,255,0.3)] pointer-events-auto">
               Your Safe Space Among the Stars
             </span>
@@ -306,47 +306,50 @@ const GalacticHeroSection = () => {
 
           {/* CTAs */}
           <motion.div 
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: isMobileView ? "-7%" : "0%" }}
-             transition={{ delay: 0.8 }}
-             className="flex flex-row gap-3 w-full md:w-auto justify-center md:justify-start pointer-events-auto"
-          >
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: isMobileView ? "-7%" : "0%" }}
+              transition={{ delay: 0.8 }}
+              className="flex flex-row gap-3 w-full md:w-auto justify-center md:justify-start pointer-events-auto"
+           >
             <Link 
-              to="/blog" 
-              className="
-                relative overflow-hidden group flex-1 md:flex-none
-                px-2 py-[14px] md:px-6 md:py-[15px] rounded-xl md:rounded-xl 
-                font-bold text-black text-center uppercase tracking-wider 
-                text-xs sm:text-sm md:text-base
-                bg-[#00FFFF] shadow-[0_0_25px_rgba(0,255,255,0.4)]
-                hover:shadow-[0_0_50px_rgba(0,255,255,0.7)] hover:scale-105 transition-all duration-300
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black
-                flex items-center justify-center
-              "
+               to="/blog" 
+               className="
+                 relative overflow-hidden group flex-1 md:flex-none
+                 px-2 py-[14px] md:px-6 md:py-[15px] rounded-xl md:rounded-xl 
+                 font-bold text-black text-center uppercase tracking-wider 
+                 text-xs sm:text-sm md:text-base
+                 bg-[#00FFFF] shadow-[0_0_25px_rgba(0,255,255,0.4)]
+                 hover:shadow-[0_0_50px_rgba(0,255,255,0.7)] hover:scale-105 transition-all duration-300
+                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black
+                 flex items-center justify-center
+               "
             >
-              <span className="relative z-10 block md:hidden">Read Blog</span>
-              <span className="relative z-10 hidden md:block">Read Our Latest Stories</span>
-              
-              {/* Glitch/Shine overlay effect */}
-              <div className="absolute inset-0 bg-white/40 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
+               <span className="relative z-10 block md:hidden">Read Blog</span>
+               <span className="relative z-10 hidden md:block">Read Our Latest Stories</span>
+               
+               {/* Glitch/Shine overlay effect */}
+               <div className="absolute inset-0 bg-white/40 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12 pointer-events-none" />
             </Link>
             
             <Link 
-              to="/store" 
-              className="
-                relative overflow-hidden group flex-1 md:flex-none
-                px-2 py-[14px] md:px-6 md:py-[15px] rounded-xl md:rounded-xl 
-                font-bold text-[#FF00FF] text-center uppercase tracking-wider 
-                text-xs sm:text-sm md:text-base
-                border-2 border-[#FF00FF] bg-transparent
-                shadow-[0_0_20px_rgba(255,0,255,0.25)]
-                hover:bg-[#FF00FF] hover:text-white hover:shadow-[0_0_40px_rgba(255,0,255,0.6)] hover:scale-105 transition-all duration-300
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF00FF] focus-visible:ring-offset-2 focus-visible:ring-offset-black
-                flex items-center justify-center
-              "
+               to="/store" 
+               className="
+                 relative overflow-hidden group flex-1 md:flex-none
+                 px-2 py-[14px] md:px-6 md:py-[15px] rounded-xl md:rounded-xl 
+                 font-bold text-[#FF00FF] text-center uppercase tracking-wider 
+                 text-xs sm:text-sm md:text-base
+                 border-2 border-[#FF00FF] bg-transparent
+                 shadow-[0_0_20px_rgba(255,0,255,0.25)]
+                 hover:bg-[#FF00FF] hover:text-white hover:shadow-[0_0_40px_rgba(255,0,255,0.6)] hover:scale-105 transition-all duration-300
+                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF00FF] focus-visible:ring-offset-2 focus-visible:ring-offset-black
+                 flex items-center justify-center
+               "
             >
                <span className="relative z-10 block md:hidden">Shop Gear</span>
                <span className="relative z-10 hidden md:block">Shop Little Gear</span>
+              
+              {/* Glitch/Shine overlay effect - ensure overlay does not capture pointer events */}
+              <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12 pointer-events-none" />
             </Link>
           </motion.div>
 
@@ -434,7 +437,7 @@ const GalacticHeroSection = () => {
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            className={`fixed inset-0 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm ${isModalOpen ? 'z-50 pointer-events-auto' : 'z-10 pointer-events-none'}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -467,7 +470,7 @@ const GalacticHeroSection = () => {
 
               <div className="text-center space-y-5 text-white">
                 <p className="text-lg md:text-xl leading-relaxed">
-                  This space is designed for age-regressors, people that feel "forever young", people doing inner-child healing work, and those feeling nostalgic for childhood.
+                  This space is designed for age-regressors, people that feel &quot;forever young&quot;, people doing inner-child healing work, and those feeling nostalgic for childhood.
                 </p>
                 <p className="text-lg md:text-xl font-medium text-pink-200">
                   Age-regression is widely seen as a healthy coping mechanism and tool for emotional processing and healing.
